@@ -1,6 +1,7 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 from blist import blist
+from utils import kmp
 
         
         
@@ -8,14 +9,21 @@ from blist import blist
 class OpenParen(object):
     def __str__(self):
         return '('
+open_paren = OpenParen()    
 
 class CloseParen(object):
     def __str__(self):
         return ')'
+close_paren = CloseParen()
 
 class Base(str):
     def __str__(self):
         return str.__str__(self)
+Base.I = Base('I')
+Base.C = Base('C')
+Base.F = Base('F')
+Base.P = Base('P')
+Base.decode = {'C': Base.I, 'F': Base.C, 'P': Base.F, 'IC': Base.P}
 
 class Skip(int):
     def __str__(self):
@@ -41,6 +49,9 @@ class FinishException(Exception):
     pass
         
         
+pattern_freqs = defaultdict(int)
+template_freqs = defaultdict(int)
+        
 dna_type = blist
         
 class Executor(object):
@@ -49,77 +60,87 @@ class Executor(object):
         self.rna = []
         self.cost = 0
         self.debug = False
+        self.iteration = 0
          
         
     def step(self):
-        #assert all(c in 'ICFP' for c in self.dna)
+        if self.debug:
+            print 'iteration', self.iteration
+            print 'dna =', limit_string(self.dna)
+            
+        
         try:
             self.index = 0
+            
             p = list(self.pattern())
             if self.debug:
                 print 'pattern ', ''.join(map(str, p))
             t = list(self.template())
             if self.debug:
                 print 'template', ''.join(map(str, t))
+                
+            for pp in p:
+                pattern_freqs[type(pp)] += 1
+            for tt in t:
+                template_freqs[type(tt)] += 1
+                
         finally:
             self.cost += self.index
             del self.dna[:self.index]
             
         self.matchreplace(p, t)
+        self.iteration += 1
         
-    def ahead(self, length):
-        return ''.join(self.dna[self.index:self.index+length])
+        if self.debug:
+            print 'len(rna) =', len(self.rna)
+            print
     
-    def move(self, delta=1):
-        self.index += delta
-        if self.index > len(self.dna):
-            self.index = len(self.dna)
-    
+    def read_prefix(self):
+        '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
+        dna = self.dna
+        prefix = ''
+        while True:
+            if self.index == len(dna):
+                return prefix
+            prefix += dna[self.index]
+            self.index += 1
+            if prefix[-1] != 'I' or len(prefix) == 3:
+                return prefix
+
+    def read_base(self):
+        if self.index == len(self.dna):
+            return ''
+        self.index += 1
+        return self.dna[self.index-1]
+        
     def pattern(self):
         lvl = 0
         while True:
-            a = self.ahead(3)
+            a = self.read_prefix()
             
-            if a.startswith('C'):
-                self.move()
-                yield Base('I')
+            base = Base.decode.get(a)
+            if base is not None:
+                yield base
                 
-            elif a.startswith('F'):
-                self.move()
-                yield Base('C')
-                
-            elif a.startswith('P'):
-                self.move()
-                yield Base('F')
-                
-            elif a.startswith('IC'):
-                self.move(2)
-                yield Base('P')
-                
-            elif a.startswith('IP'):
-                self.move(2)
+            elif a == 'IP':
                 yield Skip(self.nat())
                 
-            elif a.startswith('IF'):
-                self.move(3) # that's right, 3
+            elif a == 'IF':
+                self.read_base() # that's right
                 yield Search(self.consts())
                 
-            elif a.startswith('IIP'):
-                self.move(3)
+            elif a == 'IIP':
                 lvl += 1
-                yield OpenParen()
+                yield open_paren
                 
-            elif a.startswith('IIC') or a.startswith('IIF'):
-                self.move(3)
+            elif a == 'IIC' or a == 'IIF':
                 if lvl == 0:
                     return
                 lvl -= 1
-                yield CloseParen()
+                yield close_paren
                 
-            elif a.startswith('III'):
-                self.move(3)
-                self.rna.append(self.ahead(7))
-                self.move(7)
+            elif a == 'III':
+                self.rna.append(''.join(self.read_base() for i in range(7)))
                 
             else:
                 raise FinishException()
@@ -127,77 +148,65 @@ class Executor(object):
     def nat(self):
         s = []
         while True:
-            a = self.ahead(1)
-            self.move(len(a))
-            if a == 'P' or a == '':
+            a = self.read_base()
+            if a == '' or a == 'P':
                 break
             s.append(a)
+            
         s.reverse()
         s = ''.join(s)
         s = s.replace('I', '0').replace('F', '0').replace('C', '1')
-        return int('0'+s, 2)
+        if s == '':
+            return 0
+        return int(s, 2)
     
     def consts(self):
         result = []
         while True:
-            a = self.ahead(2)
+            a = self.read_prefix()
             
-            if a.startswith('C'):
-                self.move()
+            if a == 'C':
                 result.append('I')
                 
-            elif a.startswith('F'):
-                self.move()
+            elif a == 'F':
                 result.append('C')
                 
-            elif a.startswith('P'):
-                self.move()
+            elif a == 'P':
                 result.append('F')
                 
-            elif a.startswith('IC'):
-                self.move(2)
+            elif a == 'IC':
                 result.append('P')
                 
             else:
+                # undo read_prefix
+                self.index -= len(a)
                 break
         return ''.join(result)
     
     def template(self):
         while True:
-            a = self.ahead(3)
-            if a.startswith('C'):
-                self.move()
-                yield Base('I')
+            a = self.read_prefix()
+            
+            base = Base.decode.get(a)
+            if base is not None:
+                yield base
                 
-            elif a.startswith('F'):
-                self.move()
-                yield Base('C')
-                
-            elif a.startswith('P'):
-                self.move()
-                yield Base('F')
-                
-            elif a.startswith('IC'):
-                self.move(2)
-                yield Base('P')
-                
-            elif a.startswith('IF') or a.startswith('IP'):
-                self.move(2)
+            elif a == 'IF' or a == 'IP':
                 level = self.nat()
                 n = self.nat()
                 yield Reference(n, level)
                 
-            elif a.startswith('IIC') or a.startswith('IIF'):
-                self.move(3)
-                break
+            elif a == 'IIC' or a == 'IIF':
+                return
             
-            elif a.startswith('III'):
-                self.move(3)
-                self.rna.append(self.ahead(7))
-                self.move(7)
+            elif a == 'IIP':
+                yield Length(self.nat())
+            
+            elif a == 'III':
+                self.rna.append(''.join(self.read_base() for i in range(7)))
                 
             else:
-                raise FinishException()
+                raise FinishException(a)
     
     def matchreplace(self, pattern, template):
         e = []
@@ -221,17 +230,25 @@ class Executor(object):
                         print 'failed match'
                     return
             elif tp is Search:
-                # TODO: kmp
-                for j in xrange(i, len(dna)-len(p)+1):
-                    if ''.join(dna[j:j+len(p)]) == p:
-                        self.cost += j+len(p)-i
-                        i = j+len(p)
-                        break
+                j = next(kmp.find(dna, p, start=i), None)
+                if j is not None:
+                    self.cost += j+len(p)-i
+                    i = j+len(p)
                 else:
                     self.cost += len(dna)-i
                     if self.debug:
                         print 'failed match'
                     return
+#                for j in xrange(i, len(dna)-len(p)+1):
+#                    if ''.join(dna[j:j+len(p)]) == p:
+#                        self.cost += j+len(p)-i
+#                        i = j+len(p)
+#                        break
+#                else:
+#                    self.cost += len(dna)-i
+#                    if self.debug:
+#                        print 'failed match'
+#                    return
             elif tp is OpenParen:
                 c.append(i)
             elif tp is CloseParen:
@@ -282,6 +299,7 @@ def asnat(n):
     while n > 0:
         r.append('IC'[n%2])
         n //= 2
+    r.append('P')
     return ''.join(r)            
 
 
@@ -311,13 +329,22 @@ def main():
     
     endo = open('../data/endo.dna').read()
     e = Executor(endo)
-    e.debug = True
-    for i in xrange(10):
-        print 'iteration', i
-        print 'dna =', limit_string(e.dna)
-        e.step()
-        print 'len(rna) =', len(e.rna)
-        print
+    e.debug = False
+    
+    from time import clock
+    start = clock()
+    try:
+        for i in xrange(5000):
+            if i > 0 and i%1000 == 0:
+                print i
+                print int(i/(clock()-start+1e-6)),'steps/s'
+            e.step()
+    finally:
+        print e.iteration, 'iterations'
+        print 'it took', clock()-start
+        print 'pattern freqs', pattern_freqs
+        print 'template freqs', template_freqs
+
         
     #sys.stdout.close()
     
