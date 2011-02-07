@@ -28,7 +28,9 @@ class Search(str):
 Reference = namedtuple('Reference', 'n level')
 class Reference(Reference):
     def __str__(self):
-        return '{}_{}'.format(self.n, self.level)
+        if self.level == 0:
+            return '\\{}'.format(self.n)
+        return '\\{}_{}'.format(self.n, self.level)
     
 class Length(int):
     def __str__(self):
@@ -39,23 +41,26 @@ class FinishException(Exception):
     pass
         
         
+dna_type = blist
+        
 class Executor(object):
     def __init__(self, dna):
-        self.dna = blist(dna)
+        self.dna = dna_type(dna)
         self.rna = []
         self.cost = 0
         self.debug = False
          
         
     def step(self):
+        #assert all(c in 'ICFP' for c in self.dna)
         try:
             self.index = 0
             p = list(self.pattern())
             if self.debug:
-                print 'pattern:', ' '.join(map(str, p))
+                print 'pattern ', ''.join(map(str, p))
             t = list(self.template())
             if self.debug:
-                print 'template:', ' '.join(map(str, t))
+                print 'template', ''.join(map(str, t))
         finally:
             self.cost += self.index
             del self.dna[:self.index]
@@ -206,10 +211,14 @@ class Executor(object):
                 if dna[i] == p:
                     i += 1
                 else:
+                    if self.debug:
+                        print 'failed match'
                     return
             elif tp is Skip:
                 i += p
                 if i > len(dna):
+                    if self.debug:
+                        print 'failed match'
                     return
             elif tp is Search:
                 # TODO: kmp
@@ -220,6 +229,8 @@ class Executor(object):
                         break
                 else:
                     self.cost += len(dna)-i
+                    if self.debug:
+                        print 'failed match'
                     return
             elif tp is OpenParen:
                 c.append(i)
@@ -227,12 +238,16 @@ class Executor(object):
                 e.append((c.pop(), i))
             else:
                 assert False, 'unknown pattern element'
+        
+        if self.debug:
+            print 'succesful match of length', i
+            for j, ee in enumerate(e):
+                print 'e[{}] = {}'.format(j, limit_string(dna[ee[0]: ee[1]]))
         r = self.replacement(template, e)
-        del dna[:i]
-        dna[0:0] = r
+        dna[:i] = r
         
     def replacement(self, template, e):
-        r = blist()
+        r = dna_type()
         for t in template:
             tt = type(t)
             if tt is Base:
@@ -269,13 +284,14 @@ def asnat(n):
         n //= 2
     return ''.join(r)            
 
+
 def limit_string(s, maxlen=10):
      if len(s) <= maxlen:
          return ''.join(s)
-     return '{}... ({} total)'.format(''.join(s[:maxlen]), len(s))
+     return '{}... ({} bases)'.format(''.join(s[:maxlen]), len(s))
             
-if __name__ == '__main__':
-
+            
+def main():
     # tests from task description
     for q, a in [
         ('IIPIPICPIICICIIFICCIFPPIICCFPC', 'PICFC'),
@@ -289,15 +305,22 @@ if __name__ == '__main__':
         assert result == a
     
     
+    import sys
+    
+    #sys.stdout = open('../data/mytrace.txt', 'w')
+    
     endo = open('../data/endo.dna').read()
     e = Executor(endo)
     e.debug = True
-    for i in range(10):
-        print
+    for i in xrange(10):
         print 'iteration', i
-        print 'dna:', limit_string(e.dna, maxlen=50)
-        print 'len(rna):', len(e.rna)
+        print 'dna =', limit_string(e.dna)
         e.step()
+        print 'len(rna) =', len(e.rna)
+        print
         
+    #sys.stdout.close()
     
+if __name__ == '__main__':
+    main()    
     
