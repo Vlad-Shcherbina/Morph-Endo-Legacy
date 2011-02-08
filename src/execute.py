@@ -1,10 +1,17 @@
+
+from time import clock
 from collections import namedtuple, defaultdict
+import sys
+import argparse
 
 from blist import blist
 
 from utils import kmp
+
        
-        
+endo_file_name = '../data/endo.dna'    
+
+
  
 class OpenParen(object):
     def __str__(self):
@@ -68,6 +75,19 @@ class Executor(object):
         self.index = 0
         self.dna_iter = iter(self.dna)
         self.saved_prefix = None
+    
+    def obtain_rna(self):
+        try:
+            while True:
+                self.step()
+                for r in self.rna:
+                    yield r
+                self.rna = []
+        except FinishException:
+            pass
+        for r in self.rna:
+            yield r
+        self.rna = []
         
     def step(self):
         if self.debug:
@@ -76,10 +96,10 @@ class Executor(object):
             
         
         try:
-            p = list(self.pattern())
+            p = self.pattern()
             if self.debug:
                 print 'pattern ', ''.join(map(str, p))
-            t = list(self.template())
+            t = self.template()
             if self.debug:
                 print 'template', ''.join(map(str, t))
                 
@@ -123,24 +143,25 @@ class Executor(object):
         dna = self.dna
         len_dna = len(dna)
         dna_iter = self.dna_iter
+        local_next = next
         i = self.index
         if i < len_dna:
             #a = dna[i]
-            a = next(dna_iter)
+            a = local_next(dna_iter)
             i += 1
             if a != 'I':
                 self.index = i
                 return a
             if i < len_dna:
                 #b = dna[i]
-                b = next(dna_iter)
+                b = local_next(dna_iter)
                 i += 1
                 if b != 'I':
                     self.index = i
                     return a+b
                 if i < len_dna:
                     #c = dna[i]
-                    c = next(dna_iter)
+                    c = local_next(dna_iter)
                     i += 1
                     self.index = i
                     return a+b+c
@@ -164,30 +185,31 @@ class Executor(object):
         return next(self.dna_iter)
         
     def pattern(self):
+        result = []
         lvl = 0
         while True:
             a = self.read_prefix()
             
             base = Base.decode.get(a)
             if base is not None:
-                yield base
+                result.append(base)
                 
             elif a == 'IP':
-                yield Skip(self.nat())
+                result.append(Skip(self.nat()))
                 
             elif a == 'IF':
                 self.read_base() # that's right
-                yield Search(self.consts())
+                result.append(Search(self.consts()))
                 
             elif a == 'IIP':
                 lvl += 1
-                yield open_paren
+                result.append(open_paren)
                 
             elif a == 'IIC' or a == 'IIF':
                 if lvl == 0:
-                    return
+                    return result
                 lvl -= 1
-                yield close_paren
+                result.append(close_paren)
                 
             elif a == 'III':
                 self.rna.append(''.join(self.read_base() for i in range(7)))
@@ -227,32 +249,29 @@ class Executor(object):
                 
             else:
                 self.unread_prefix(a)
-                #print a == ''
-                # undo read_prefix
-                #self.index -= len(a)
-                #for c in reversed(a):
-                #    self.dna_iter.unnext(c)
                 break
+            
         return ''.join(result)
     
     def template(self):
+        result = []
         while True:
             a = self.read_prefix()
             
             base = Base.decode.get(a)
             if base is not None:
-                yield base
+                result.append(base)
                 
             elif a == 'IF' or a == 'IP':
                 level = self.nat()
                 n = self.nat()
-                yield Reference(n, level)
+                result.append(Reference(n, level))
                 
             elif a == 'IIC' or a == 'IIF':
-                return
+                return result
             
             elif a == 'IIP':
-                yield Length(self.nat())
+                result.append(Length(self.nat()))
             
             elif a == 'III':
                 self.rna.append(''.join(self.read_base() for i in range(7)))
@@ -368,8 +387,8 @@ def limit_string(s, maxlen=10):
          return ''.join(s)
      return '{}... ({} bases)'.format(''.join(s[:maxlen]), len(s))
             
-            
-def main():
+
+def test():
     # tests from task description
     for q, a in [
         ('IIPIPICPIICICIIFICCIFPPIICCFPC', 'PICFC'),
@@ -383,11 +402,17 @@ def main():
         assert result == a
     
     
-    import sys
+def generate_trace():
+    endo = open(endo_file_name).read()
+    e = Executor(endo)
     
-    #sys.stdout = open('../data/mytrace.txt', 'w')
-    
-    endo = open('../data/endo.dna').read()
+    e.debug = True
+    for i in range(10):
+        e.step()
+        
+        
+def stats_run():        
+    endo = open(endo_file_name).read()
     
     prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
     prefix = ''
@@ -395,7 +420,6 @@ def main():
     e = Executor(prefix+endo)
     #e.debug = True
     
-    from time import clock
     start = clock()
     try:
         for i in xrange(2*10**9):
@@ -406,14 +430,38 @@ def main():
         print 'execution finished'
     finally:
         print e.iteration, 'iterations'
-        print len(e.rna),'rna produced'
+        print len(e.rna), 'rna produced'
         print 'it took', clock()-start
+        print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
         print 'pattern freqs', pattern_freqs
         print 'template freqs', template_freqs
         print 'prefix len freqs', prefix_len_freqs
+            
+            
+def main():
+    test()
+    
+    endo = open(endo_file_name).read()
+    
+    prefix_file, = sys.argv[1:]
+    
+    prefix = open(prefix_file+'.dna').read()
+    
+    rna = open(prefix_file+'.rna', 'w')
+    
+    e = Executor(prefix+endo)
+    
+    start = clock()
+    
+    for r in e.obtain_rna():
+        print>>rna, r
+    
+    print 'it took', clock()-start
+    print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
+    
+    rna.close()
 
         
-    #sys.stdout.close()
     
 if __name__ == '__main__':
     main()    
