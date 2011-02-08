@@ -1,9 +1,9 @@
 from collections import namedtuple, defaultdict
 
 from blist import blist
-from utils import kmp
 
-        
+from utils import kmp
+       
         
  
 class OpenParen(object):
@@ -51,6 +51,7 @@ class FinishException(Exception):
         
 pattern_freqs = defaultdict(int)
 template_freqs = defaultdict(int)
+prefix_len_freqs = defaultdict(int)
         
 dna_type = blist
         
@@ -61,7 +62,12 @@ class Executor(object):
         self.cost = 0
         self.debug = False
         self.iteration = 0
+        self.init_dna_scan()
          
+    def init_dna_scan(self):
+        self.index = 0
+        self.dna_iter = iter(self.dna)
+        self.saved_prefix = None
         
     def step(self):
         if self.debug:
@@ -70,8 +76,6 @@ class Executor(object):
             
         
         try:
-            self.index = 0
-            
             p = list(self.pattern())
             if self.debug:
                 print 'pattern ', ''.join(map(str, p))
@@ -89,29 +93,75 @@ class Executor(object):
             del self.dna[:self.index]
             
         self.matchreplace(p, t)
+        self.init_dna_scan()
         self.iteration += 1
         
         if self.debug:
             print 'len(rna) =', len(self.rna)
             print
     
-    def read_prefix(self):
+    def read_prefix_old(self):
         '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
         dna = self.dna
         prefix = ''
         while True:
             if self.index == len(dna):
+                prefix_len_freqs[len(prefix)] += 1
                 return prefix
             prefix += dna[self.index]
             self.index += 1
             if prefix[-1] != 'I' or len(prefix) == 3:
+                prefix_len_freqs[len(prefix)] += 1
                 return prefix
+            
+    def read_prefix(self):
+        if self.saved_prefix:
+            result = self.saved_prefix
+            self.saved_prefix = None
+            self.index += len(result)
+            return result
+        dna = self.dna
+        len_dna = len(dna)
+        dna_iter = self.dna_iter
+        i = self.index
+        if i < len_dna:
+            #a = dna[i]
+            a = next(dna_iter)
+            i += 1
+            if a != 'I':
+                self.index = i
+                return a
+            if i < len_dna:
+                #b = dna[i]
+                b = next(dna_iter)
+                i += 1
+                if b != 'I':
+                    self.index = i
+                    return a+b
+                if i < len_dna:
+                    #c = dna[i]
+                    c = next(dna_iter)
+                    i += 1
+                    self.index = i
+                    return a+b+c
+                self.index = i
+                return a+b
+            self.index = i
+            return a
+        return ''
+    
+    def unread_prefix(self, prefix):
+        assert self.saved_prefix is None
+        self.index -= len(prefix)
+        self.saved_prefix = prefix
 
     def read_base(self):
+        assert self.saved_prefix is None
         if self.index == len(self.dna):
             return ''
         self.index += 1
-        return self.dna[self.index-1]
+        #return self.dna[self.index-1]
+        return next(self.dna_iter)
         
     def pattern(self):
         lvl = 0
@@ -146,19 +196,17 @@ class Executor(object):
                 raise FinishException()
             
     def nat(self):
-        s = []
+        result = 0
+        power = 1
         while True:
             a = self.read_base()
             if a == '' or a == 'P':
                 break
-            s.append(a)
-            
-        s.reverse()
-        s = ''.join(s)
-        s = s.replace('I', '0').replace('F', '0').replace('C', '1')
-        if s == '':
-            return 0
-        return int(s, 2)
+            if a == 'C':
+                result += power
+            power *= 2
+        
+        return result    
     
     def consts(self):
         result = []
@@ -178,8 +226,12 @@ class Executor(object):
                 result.append('P')
                 
             else:
+                self.unread_prefix(a)
+                #print a == ''
                 # undo read_prefix
-                self.index -= len(a)
+                #self.index -= len(a)
+                #for c in reversed(a):
+                #    self.dna_iter.unnext(c)
                 break
         return ''.join(result)
     
@@ -214,6 +266,7 @@ class Executor(object):
         c = []
         dna = self.dna
         for p in pattern:
+            #print p
             tp = type(p)
             if tp is Base:
                 self.cost += 1
@@ -265,12 +318,16 @@ class Executor(object):
         
     def replacement(self, template, e):
         r = dna_type()
+        base_to_string = str.__str__
         for t in template:
             tt = type(t)
             if tt is Base:
-                r.append(str.__str__(t))
+                r.append(base_to_string(t))
             elif tt is Reference:
-                begin, end = e[t.n]
+                if t.n < len(e):
+                    begin, end = e[t.n]
+                else:
+                    begin, end = 0, 0
                 if t.level == 0:
                     r.extend(self.dna[begin:end])
                 else:
@@ -278,7 +335,10 @@ class Executor(object):
                     self.cost += len(p)
                     r.extend(p)
             elif tt is Length:
-                begin, end = e[t]
+                if t < len(e):
+                    begin, end = e[t]
+                else:
+                    begin, end = 0, 0
                 r.extend(asnat(end-begin))
         return r            
 
@@ -328,22 +388,29 @@ def main():
     #sys.stdout = open('../data/mytrace.txt', 'w')
     
     endo = open('../data/endo.dna').read()
-    e = Executor(endo)
-    e.debug = False
+    
+    prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
+    prefix = ''
+    
+    e = Executor(prefix+endo)
+    #e.debug = True
     
     from time import clock
     start = clock()
     try:
-        for i in xrange(5000):
+        for i in xrange(2*10**9):
             if i > 0 and i%1000 == 0:
-                print i
-                print int(i/(clock()-start+1e-6)),'steps/s'
+                print i, int(i/(clock()-start+1e-6)),'steps/s'
             e.step()
+    except FinishException:
+        print 'execution finished'
     finally:
         print e.iteration, 'iterations'
+        print len(e.rna),'rna produced'
         print 'it took', clock()-start
         print 'pattern freqs', pattern_freqs
         print 'template freqs', template_freqs
+        print 'prefix len freqs', prefix_len_freqs
 
         
     #sys.stdout.close()
