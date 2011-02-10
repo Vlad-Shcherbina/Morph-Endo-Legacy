@@ -5,7 +5,30 @@ from collections import namedtuple
 import Image
 import numpy
 
-N = 600
+size = 600
+
+commands = {
+    'PIPIIIC': 'black',
+    'PIPIIIP': 'red',
+    'PIPIICC': 'green',
+    'PIPIICF': 'yellow',
+    'PIPIICP': 'blue',
+    'PIPIIFC': 'magenta',
+    'PIPIIFF': 'cyan',
+    'PIPIIPC': 'white',
+    'PIPIIPF': 'transparent',
+    'PIPIIPP': 'opaque',
+    'PIIPICP': 'clear',
+    'PIIIIIP': 'move',
+    'PCCCCCP': 'counter clockwise',
+    'PFFFFFP': 'clockwise',
+    'PCCIFFP': 'mark',
+    'PFFICCP': 'line',
+    'PIIPIIP': 'fill',
+    'PCCPFFP': 'add bitmap',
+    'PFFPCCP': 'compose',
+    'PFFICCF': 'clip',
+    }
 
 
 class Bucket(object):
@@ -13,6 +36,8 @@ class Bucket(object):
         self.clear()
         
     def get_color(self):
+        if self.cached_color is not None:
+            return self.cached_color
         if self.num_colors == 0:
             r = g = b = 0
         else:
@@ -23,29 +48,33 @@ class Bucket(object):
             a = 255
         else:
             a = self.a//self.num_alphas
-        return a*r//255, a*g//255, a*b//255, a
+        self.cached_color = result = a*r//255, a*g//255, a*b//255, a
+        return result
     
     def add_color(self, r, g, b):
         self.num_colors += 1
         self.r += r
         self.g += g
         self.b += b
+        self.cached_color = None
         
     def add_alpha(self, a):
         self.num_alphas += 1
         self.a += a
+        self.cached_color = None
         
     def clear(self):
         self.num_colors = 0
         self.r = self.g = self.b = 0
         self.num_alphas = 0
         self.a = 0
+        self.cached_color = None
         
         
 class Builder(object):
     def __init__(self):
-        rgb = numpy.zeros((3, N, N), dtype=int)
-        a = 255*numpy.ones((1, N, N), dtype=int)
+        rgb = numpy.zeros((3, size, size), dtype=int)
+        a = 255*numpy.ones((1, size, size), dtype=int)
         self.bitmaps = [numpy.concatenate((rgb, a))]
         self.bucket = Bucket()
         
@@ -65,63 +94,65 @@ class Builder(object):
         return img
         
     def get_state_image(self):
-        img = Image.new('RGB', (N*2, N))
+        img = Image.new('RGB', (size*2, size))
         img.paste(self.bitmap_to_image(self.bitmaps[0]), (0, 0))
         for i, bmp in enumerate(self.bitmaps[1:]):
             t = self.bitmap_to_image(bmp)
-            t = t.resize((N//3, N//3), Image.ANTIALIAS)
-            img.paste(t, (N+i%3*N//3, i//3*N//3))
+            t = t.resize((size//3, size//3), Image.ANTIALIAS)
+            img.paste(t, (size+i%3*size//3, i//3*size//3))
         return img
          
     def get_result_image(self):
         return self.bitmap_to_image(self.bitmaps[0])
     
     def run_command(self, cmd):
-        if cmd == 'PIPIIIC':
+        cmd = commands.get(cmd)
+        
+        if cmd == 'black':
             self.bucket.add_color(0, 0, 0)
-        elif cmd == 'PIPIIIP':
+        elif cmd == 'red':
             self.bucket.add_color(255, 0, 0)
-        elif cmd == 'PIPIICC':
+        elif cmd == 'green':
             self.bucket.add_color(0, 255, 0)
-        elif cmd == 'PIPIICF':
+        elif cmd == 'yellow':
             self.bucket.add_color(255, 255, 0)
-        elif cmd == 'PIPIICP':
+        elif cmd == 'blue':
             self.bucket.add_color(0, 0, 255)
-        elif cmd == 'PIPIIFC':
+        elif cmd == 'magenta':
             self.bucket.add_color(255, 0, 255)
-        elif cmd == 'PIPIIFF':
+        elif cmd == 'cyan':
             self.bucket.add_color(0, 255, 255)
-        elif cmd == 'PIPIIPC':
+        elif cmd == 'white':
             self.bucket.add_color(255, 255, 255)
-        elif cmd == 'PIPIIPF':
+        elif cmd == 'transparent':
             self.bucket.add_alpha(0)
-        elif cmd == 'PIPIIPP':
+        elif cmd == 'opaque':
             self.bucket.add_alpha(255)
             
-        elif cmd == 'PIIPICP':
+        elif cmd == 'clear':
             self.bucket.clear()
             
-        elif cmd == 'PIIIIIP':
+        elif cmd == 'move':
             self.move()
-        elif cmd == 'PCCCCCP':
+        elif cmd == 'counter clockwise':
             self.turn_counter_clockwise()
-        elif cmd == 'PFFFFFP':
+        elif cmd == 'clockwise':
             self.turn_clockwise()
             
-        elif cmd == 'PCCIFFP':
+        elif cmd == 'mark':
             self.markX, self.markY = self.x, self.y
         
-        elif cmd == 'PFFICCP':
+        elif cmd == 'line':
             self.line(self.x, self.y, self.markX, self.markY)
-        elif cmd == 'PIIPIIP':
+        elif cmd == 'fill':
             self.tryfill()
             
-        elif cmd == 'PCCPFFP':
+        elif cmd == 'add bitmap':
             if len(self.bitmaps) < 10:
-                self.bitmaps.insert(0, numpy.zeros((4, N, N), dtype=int))
-        elif cmd == 'PFFPCCP':
+                self.bitmaps.insert(0, numpy.zeros((4, size, size), dtype=int))
+        elif cmd == 'compose':
             self.compose()
-        elif cmd == 'PFFICCF':
+        elif cmd == 'clip':
             self.clip()
         
     def turn_clockwise(self):
@@ -132,15 +163,27 @@ class Builder(object):
         
     def move(self):
         self.x += self.dirX
-        self.x %= N
+        self.x %= size
         self.y += self.dirY
-        self.y %= N
+        self.y %= size
         
     def get_pixel(self, x, y):
-        return tuple(self.bitmaps[0][:, y, x])
+        #return tuple(self.bitmaps[0][:, y, x])
+        bitmap = self.bitmaps[0]
+        return (bitmap[0, y, x], 
+                bitmap[1, y, x], 
+                bitmap[2, y, x], 
+                bitmap[3, y, x])
         
     def set_pixel(self, x, y):
-        self.bitmaps[0][:, y, x] = self.bucket.get_color()
+        #self.bitmaps[0][:, y, x] = self.bucket.get_color()
+        bitmap = self.bitmaps[0]
+        r, g, b, a = self.bucket.get_color()
+        bitmap[0, y, x] = r
+        bitmap[1, y, x] = g
+        bitmap[2, y, x] = b
+        bitmap[3, y, x] = a
+        
         self.cost += 1
         
     def line(self, x0, y0, x1, y1):
@@ -162,31 +205,32 @@ class Builder(object):
     def tryfill(self):
         new = self.bucket.get_color()
         old = self.get_pixel(self.x, self.y)
+         
         if new == old:
             return
+
         fill_tasks = set([(self.x, self.y)])
         visited = set()
         
         def add_task(x, y):
-            if (x, y) in visited or (x, y) in fill_tasks:
+            xy = x, y
+            if xy in visited or xy in fill_tasks:
                 return
-            fill_tasks.add((x, y))
+            fill_tasks.add(xy)
         
         while fill_tasks:
             x, y = fill_tasks.pop()
-            if (x, y) in visited:
-                continue
             visited.add((x, y))
             if self.get_pixel(x, y) != old:
                 continue
             self.set_pixel(x, y)
             if x > 0:
                 add_task(x-1, y)
-            if x < N-1:
+            if x < size-1:
                 add_task(x+1, y)
             if y > 0:
                 add_task(x, y-1)
-            if y < N-1:
+            if y < size-1:
                 add_task(x, y+1)           
 
         
@@ -197,7 +241,7 @@ class Builder(object):
         self.bitmaps[1] //= 255
         self.bitmaps[1] += self.bitmaps[0]
         del self.bitmaps[0]
-        self.cost += N*N
+        self.cost += size*size
         
     def clip(self):
         if len(self.bitmaps) < 2:
@@ -205,7 +249,7 @@ class Builder(object):
         self.bitmaps[1] *= self.bitmaps[0][3,:,:]
         self.bitmaps[1] //= 255
         del self.bitmaps[0]
-        self.cost += N*N
+        self.cost += size*size
 
 
 def main():
