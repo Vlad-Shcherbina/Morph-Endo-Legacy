@@ -6,7 +6,7 @@ import argparse
 
 from blist import blist
 
-from utils import kmp
+import kmp
 
        
 endo_file_name = '../data/endo.dna'    
@@ -64,6 +64,7 @@ dna_type = blist
         
 class Executor(object):
     def __init__(self, dna):
+        assert all(c in 'ICFP' for c in dna)
         self.dna = dna_type(dna)
         self.rna = []
         self.cost = 0
