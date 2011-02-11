@@ -97,9 +97,9 @@ def main():
         
     
 if __name__ == '__main__':
-    #main()
+    main()
     #test()
-    stats_run(10000)
+    #stats_run(10000)
     #main()
     #cProfile.run('stats_run(10000)', 'profile')
     #generate_trace()

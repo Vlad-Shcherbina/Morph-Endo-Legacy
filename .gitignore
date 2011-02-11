@@ -1,0 +1,4 @@
+*.png
+*.rna
+# because endo is huge
+data/endo.dna
