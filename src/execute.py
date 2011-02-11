@@ -11,11 +11,8 @@ except ImportError:
     pass
 
 from Executor import Executor, FinishException
+from dna_code import endo
   
-
-
-
-endo_file_name = '../data/endo.dna'    
              
 
 def test():
@@ -28,12 +25,10 @@ def test():
         e = Executor(q)
         e.step()
         result = ''.join(e.dna)
-        #print result
         assert result == a
     
     
 def generate_trace():
-    endo = open(endo_file_name).read()
     e = Executor(endo)
     
     e.debug = True
@@ -42,12 +37,7 @@ def generate_trace():
         
         
 def stats_run(n_steps=0):        
-    endo = open(endo_file_name).read()
-    
-#   prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
-    prefix = ''
-    
-    e = Executor(prefix+endo)
+    e = Executor(endo)
     #e.debug = True
     
     start = clock()
@@ -73,8 +63,6 @@ def stats_run(n_steps=0):
 def main():
     test()
     
-    endo = open(endo_file_name).read()
-    
     prefix_file, = sys.argv[1:]
     
     prefix = open(prefix_file+'.dna').read()
@@ -82,12 +70,12 @@ def main():
     rna = open(prefix_file+'.rna', 'w')
     
     e = Executor(prefix+endo)
+    #e.debug = True
     
     start = clock()
     
     for r in e.obtain_rna():
         print>>rna, r
-    #e.dump_rna(rna)
     
     print 'it took', clock()-start
     print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'

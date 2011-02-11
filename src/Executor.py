@@ -1,7 +1,8 @@
 from collections import defaultdict
 
 import kmp
-from helpers import protect, asnat, limit_string
+from helpers import limit_string
+from dna_code import protect, asnat
 from items import Base, OpenParen, open_paren, CloseParen, close_paren, \
     Skip, Search, Reference, Length 
 
@@ -41,7 +42,7 @@ class Executor(object):
     def step(self):
         if self.debug:
             print 'iteration', self.iteration
-            print 'dna =', limit_string(self.dna, self.freqs)
+            print 'dna =', limit_string(self.dna)
             
         
         try:
