@@ -27,7 +27,8 @@ class DNA_parser(object):
         assert isinstance(dna, dna_type)
         self.dna = dna
         self.dna_len = len(self.dna)
-        self.index = 0
+        self.index = 0  # needed outside the parser
+        self.iter = iter(self.dna)
         self.saved_codon = None
         self.pattern_freqs, self.template_freqs, self.codon_len_freqs = freqs
      
@@ -37,7 +38,7 @@ class DNA_parser(object):
         if self.index == self.dna_len:
             return ''
         self.index += 1
-        return self.dna[self.index - 1]
+        return self.iter.next()
     
     def read_codon(self):
         '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
@@ -45,18 +46,16 @@ class DNA_parser(object):
         if self.saved_codon is not None:
             result = self.saved_codon
             self.saved_codon = None
-            #self.index += len(result)
             return result
         
         dna = self.dna
-        index = self.index
-        bases_left = self.dna_len - index
+        bases_left = self.dna_len - self.index
         max_len = bases_left if bases_left < 3 else 3 # faster than min
             
         codon = ''    
         codon_len = 0
         while codon_len < max_len:
-            base = dna[index + codon_len]
+            base = self.iter.next()
             codon_len += 1
             codon += base
             if base != 'I':
@@ -69,7 +68,6 @@ class DNA_parser(object):
     
     def unread_codon(self, codon):
         assert self.saved_codon is None
-        #self.index -= len(codon)
         self.saved_codon = codon
         
 class Executor(object):
