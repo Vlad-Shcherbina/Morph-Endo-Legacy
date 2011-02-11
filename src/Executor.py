@@ -22,70 +22,15 @@ dna_type = blist
 class FinishException(Exception):
     pass
 
-        
-class Executor(object):
-    def __init__(self, dna):
-        #assert all(c in 'ICFP' for c in dna)
-        self.dna = dna_type(dna)
+class DNA_parser(object):
+    def __init__(self, dna, freqs):
+        assert isinstance(dna, dna_type)
+        self.dna = dna
         self.dna_len = len(self.dna)
-        self.rna = []
-        self.cost = 0
-        self.debug = False
-        self.iteration = 0
-        self.pattern_freqs = defaultdict(int)
-        self.template_freqs = defaultdict(int)
-        self.codon_len_freqs = defaultdict(int)
-        self.begin_dna_scan()
-             
-    def obtain_rna(self):
-        try:
-            while True:
-                self.step()
-                for r in self.rna:
-                    yield r
-                self.rna = []
-        except FinishException:
-            pass
-        for r in self.rna:
-            yield r
-        self.rna = []
-        
-    def step(self):
-        if self.debug:
-            print 'iteration', self.iteration
-            print 'dna =', limit_string(self.dna)
-            
-        
-        try:
-            p = self.pattern()
-            if self.debug:
-                print 'pattern ', ''.join(map(str, p))
-            t = self.template()
-            if self.debug:
-                print 'template', ''.join(map(str, t))
-                
-            for pp in p:
-                self.pattern_freqs[type(pp)] += 1
-            for tt in t:
-                self.template_freqs[type(tt)] += 1
-                
-        finally:
-            self.cost += self.index
-            self.dna = self.dna[self.index:self.dna_len]
-            self.dna_len = len(self.dna)
-            
-        self.matchreplace(p, t)
-        self.begin_dna_scan()
-        self.iteration += 1
-        
-        if self.debug:
-            print 'len(rna) =', len(self.rna)
-            print
-
-    def begin_dna_scan(self):
         self.index = 0
-        self.saved_codon = None # because we sometimes unread codon
-
+        self.saved_codon = None
+        self.pattern_freqs, self.template_freqs, self.codon_len_freqs = freqs
+     
     def read_base(self):
         '''return base or empty string in case of EOF'''
         assert self.saved_codon is None #because of the structure of the parser
@@ -93,7 +38,7 @@ class Executor(object):
             return ''
         self.index += 1
         return self.dna[self.index - 1]
-        
+    
     def read_codon(self):
         '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
         # it turned out to be useful for parsing pattern, template and consts
@@ -121,18 +66,79 @@ class Executor(object):
         
         self.codon_len_freqs[codon_len] += 1
         return codon
-
     
     def unread_codon(self, codon):
         assert self.saved_codon is None
         #self.index -= len(codon)
         self.saved_codon = codon
+        
+class Executor(object):
+    def __init__(self, dna):
+        #assert all(c in 'ICFP' for c in dna)
+        self.pattern_freqs = defaultdict(int)
+        self.template_freqs = defaultdict(int)
+        self.codon_len_freqs = defaultdict(int)
+        self.freqs = [self.pattern_freqs, self.template_freqs, self.codon_len_freqs]
+
+        self.dna = dna_type(dna)
+        self.parser = DNA_parser(self.dna, self.freqs)
+        self.rna = []
+        self.cost = 0
+        self.debug = False
+        self.iteration = 0
+             
+#    def obtain_rna(self):
+#        try:
+#            while True:
+#                self.step()
+#                for r in self.rna:
+#                    yield r
+#                self.rna = []
+#        except FinishException:
+#            pass
+#        for r in self.rna:
+#            yield r
+#        self.rna = []
+        
+    def step(self):
+        if self.debug:
+            print 'iteration', self.iteration
+            print 'dna =', limit_string(self.dna, self.freqs)
+            
+        
+        try:
+            p = self.pattern()
+            if self.debug:
+                print 'pattern ', ''.join(map(str, p))
+            t = self.template()
+            if self.debug:
+                print 'template', ''.join(map(str, t))
+                
+            for pp in p:
+                self.pattern_freqs[type(pp)] += 1
+            for tt in t:
+                self.template_freqs[type(tt)] += 1
+                
+        finally:
+            index = self.parser.index
+            self.cost += index
+            self.parser = None
+            self.dna = self.dna[index:len(self.dna)]
+            
+        self.matchreplace(p, t)
+        self.parser = DNA_parser(self.dna, self.freqs)
+        self.iteration += 1
+        
+        if self.debug:
+            print 'len(rna) =', len(self.rna)
+            print
 
     def pattern(self):
         result = []
         lvl = 0
+        parser = self.parser
         while True:
-            a = self.read_codon()
+            a = parser.read_codon()
             
             base = Base.decode.get(a)
             if base is not None:
@@ -142,7 +148,7 @@ class Executor(object):
                 result.append(Skip(self.nat()))
                 
             elif a == 'IF':
-                self.read_base() # that's right
+                parser.read_base() # that's right
                 result.append(Search(self.consts()))
                 
             elif a == 'IIP':
@@ -156,7 +162,10 @@ class Executor(object):
                 result.append(close_paren)
                 
             elif a == 'III':
-                self.rna.append(''.join(self.read_base() for i in range(7)))
+                command = ''
+                for i in range(7):
+                    command += parser.read_base()
+                self.rna.append(command)
                 
             else:
                 raise FinishException()
@@ -165,7 +174,7 @@ class Executor(object):
         result = 0
         power = 1
         while True:
-            a = self.read_base()
+            a = self.parser.read_base()
             if a == '' or a == 'P':
                 break
             if a == 'C':
@@ -177,7 +186,7 @@ class Executor(object):
     def consts(self):
         result = []
         while True:
-            a = self.read_codon()
+            a = self.parser.read_codon()
             
             if a == 'C':
                 result.append('I')
@@ -192,15 +201,16 @@ class Executor(object):
                 result.append('P')
                 
             else:
-                self.unread_codon(a) #it will be later consumed in pattern()
+                self.parser.unread_codon(a) #it will be later consumed in pattern()
                 break
             
         return ''.join(result)
     
     def template(self):
         result = []
+        parser = self.parser
         while True:
-            a = self.read_codon()
+            a = parser.read_codon()
             
             base = Base.decode.get(a)
             if base is not None:
@@ -218,7 +228,10 @@ class Executor(object):
                 result.append(Length(self.nat()))
             
             elif a == 'III':
-                self.rna.append(''.join(self.read_base() for i in range(7)))
+                command = ''
+                for i in range(7):
+                    command += parser.read_base()
+                self.rna.append(command)
                 
             else:
                 raise FinishException(a)
@@ -229,7 +242,6 @@ class Executor(object):
         i = 0
         c = []
         dna = self.dna
-       # dna_len = self.dna_len
         for p in pattern:
             tp = type(p)
             if tp is Base:
@@ -274,7 +286,6 @@ class Executor(object):
         dna = dna[i:len(dna)]
         r.extend(dna)
         self.dna = r
-        self.dna_len = len(self.dna)
         
     def replacement(self, template, e):
         r = dna_type()
