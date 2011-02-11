@@ -97,6 +97,20 @@ class Executor(object):
 #        for r in self.rna:
 #            yield r
 #        self.rna = []
+
+    def dump_rna(self, f):
+        try:
+            while True:
+                self.step()
+                for r in self.rna:
+                    print>>f, r
+                self.rna = []
+        except FinishException:
+            pass
+        for r in self.rna:
+            print>>f, r
+        self.rna = []
+   
         
     def step(self):
         if self.debug:
@@ -121,7 +135,8 @@ class Executor(object):
             index = self.parser.index
             self.cost += index
             self.parser = None
-            self.dna = self.dna[index:len(self.dna)]
+            #self.dna = self.dna[index:len(self.dna)]
+            del self.dna[:index]
             
         self.matchreplace(p, t)
         self.parser = DNA_parser(self.dna, self.freqs)
@@ -281,9 +296,10 @@ class Executor(object):
             for j, ee in enumerate(e):
                 print 'e[{}] = {}'.format(j, limit_string(dna[ee[0]: ee[1]]))
         r = self.replacement(template, e)
-        dna = dna[i:len(dna)]
-        r.extend(dna)
-        self.dna = r
+#        dna = dna[i:len(dna)]
+#        r.extend(dna)
+#        self.dna = r
+        dna[:i] = r
         
     def replacement(self, template, e):
         r = dna_type()

@@ -10,9 +10,12 @@ try:
 except ImportError:
     pass
 
-#from Executor import Executor, FinishException
-import pyximport; pyximport.install(build_dir=".",build_in_temp=False)
-from Executorx import Executor, FinishException
+use_cython = False
+if use_cython:
+    import pyximport; pyximport.install(build_dir=".",build_in_temp=False)
+    from Executorx import Executor, FinishException
+else:
+    from Executor import Executor, FinishException
   
 
 
@@ -46,7 +49,7 @@ def generate_trace():
 def stats_run(n_steps=0):        
     endo = open(endo_file_name).read()
     
-#    prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
+#   prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
     prefix = ''
     
     e = Executor(prefix+endo)
@@ -87,8 +90,9 @@ def main():
     
     start = clock()
     
-    for r in e.obtain_rna():
-        print>>rna, r
+    #for r in e.obtain_rna():
+    #    print>>rna, r
+    e.dump_rna(rna)
     
     print 'it took', clock()-start
     print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
@@ -99,7 +103,9 @@ def main():
     
 if __name__ == '__main__':
     #main()
-    test()
+    #test()
+    #stats_run()
+    #main()
     cProfile.run('stats_run(10000)', 'profile')
     #generate_trace()
     
