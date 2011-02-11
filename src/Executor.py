@@ -3,7 +3,7 @@ from blist import blist
 
 import kmp
 from helpers import protect, asnat, limit_string
-from items import Base, OpenParen, open_paren, CloseParen, close_paren,\
+from items import Base, OpenParen, open_paren, CloseParen, close_paren, \
     Skip, Search, Reference, Length 
 
 
@@ -27,6 +27,7 @@ class Executor(object):
     def __init__(self, dna):
         #assert all(c in 'ICFP' for c in dna)
         self.dna = dna_type(dna)
+        self.dna_len = len(self.dna)
         self.rna = []
         self.cost = 0
         self.debug = False
@@ -70,7 +71,8 @@ class Executor(object):
                 
         finally:
             self.cost += self.index
-            self.dna = self.dna[self.index:len(self.dna)]
+            self.dna = self.dna[self.index:self.dna_len]
+            self.dna_len = len(self.dna)
             
         self.matchreplace(p, t)
         self.begin_dna_scan()
@@ -87,11 +89,34 @@ class Executor(object):
     def read_base(self):
         '''return base or empty string in case of EOF'''
         assert self.saved_codon is None #because of the structure of the parser
-        if self.index == len(self.dna):
+        if self.index == self.dna_len:
             return ''
         self.index += 1
-        return self.dna[self.index-1]
+        return self.dna[self.index - 1]
         
+#    def read_codon(self):
+#        '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
+#        # it turned out to be useful for parsing pattern, template and consts
+#        if self.saved_codon is not None:
+#            result = self.saved_codon
+#            self.saved_codon = None
+#            self.index += len(result)
+#            return result
+#        
+#        dna = self.dna
+#        codon = ''
+#        codon_len = 0
+#        while True:
+#            a = self.read_base()
+#            if a == '':
+#                self.codon_len_freqs[codon_len] += 1
+#                return codon
+#            codon += a
+#            codon_len += 1
+#            if a != 'I' or codon_len == 3:
+#                self.codon_len_freqs[codon_len] += 1
+#                return codon
+            
     def read_codon(self):
         '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
         # it turned out to be useful for parsing pattern, template and consts
@@ -102,17 +127,24 @@ class Executor(object):
             return result
         
         dna = self.dna
-        codon = ''
-        while True:
-            a = self.read_base()
-            if a == '':
-                self.codon_len_freqs[len(codon)] += 1
-                return codon
-            codon += a
-            if a != 'I' or len(codon) == 3:
-                self.codon_len_freqs[len(codon)] += 1
-                return codon
+        index = self.index
+        bases_left = self.dna_len - index
+        max_len = bases_left if bases_left < 3 else 3 # faster than min
             
+        codon = ''    
+        codon_len = 0
+        while codon_len < max_len:
+            base = dna[index + codon_len]
+            codon_len += 1
+            codon += base
+            if base != 'I':
+                break
+               
+        self.index += codon_len
+        
+        self.codon_len_freqs[codon_len] += 1
+        return codon
+
     
     def unread_codon(self, codon):
         assert self.saved_codon is None
@@ -188,8 +220,35 @@ class Executor(object):
             
         return ''.join(result)
     
+#    def template(self):
+#        result = []
+#        while True:
+#            a = self.read_codon()
+#            
+#            base = Base.decode.get(a)
+#            if base is not None:
+#                result.append(base)
+#                
+#            elif a == 'IF' or a == 'IP':
+#                level = self.nat()
+#                n = self.nat()
+#                result.append(Reference(n, level))
+#                
+#            elif a == 'IIC' or a == 'IIF':
+#                return result
+#            
+#            elif a == 'IIP':
+#                result.append(Length(self.nat()))
+#            
+#            elif a == 'III':
+#                self.rna.append(''.join(self.read_base() for i in range(7)))
+#                
+#            else:
+#                raise FinishException(a)
+
     def template(self):
         result = []
+        
         while True:
             a = self.read_codon()
             
@@ -212,13 +271,13 @@ class Executor(object):
                 self.rna.append(''.join(self.read_base() for i in range(7)))
                 
             else:
-                raise FinishException(a)
-    
+                raise FinishException(a)    
     def matchreplace(self, pattern, template):
         e = []
         i = 0
         c = []
         dna = self.dna
+       # dna_len = self.dna_len
         for p in pattern:
             tp = type(p)
             if tp is Base:
@@ -240,10 +299,10 @@ class Executor(object):
             elif tp is Search:
                 j = next(kmp.find(dna, p, start=i), None)
                 if j is not None:
-                    self.cost += j+len(p)-i
-                    i = j+len(p)
+                    self.cost += j + len(p) - i
+                    i = j + len(p)
                 else:
-                    self.cost += len(dna)-i
+                    self.cost += len(dna) - i
                     if self.debug:
                         print 'failed match (search)'
                     return
@@ -263,6 +322,7 @@ class Executor(object):
         dna = dna[i:len(dna)]
         r.extend(dna)
         self.dna = r
+        self.dna_len = len(self.dna)
         
     def replacement(self, template, e):
         r = dna_type()
@@ -287,5 +347,5 @@ class Executor(object):
                     begin, end = e[t]
                 else:
                     begin, end = 0, 0
-                r.extend(asnat(end-begin))
+                r.extend(asnat(end - begin))
         return r

@@ -2,6 +2,7 @@
 from time import clock
 import sys
 import argparse
+import cProfile
 
 try:
     import psyco
@@ -40,10 +41,10 @@ def generate_trace():
         e.step()
         
         
-def stats_run():        
+def stats_run(n_steps=0):        
     endo = open(endo_file_name).read()
     
-    prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
+#    prefix = 'IIPIFFCPICICIICPIICIPPPICIIC'
     prefix = ''
     
     e = Executor(prefix+endo)
@@ -55,6 +56,8 @@ def stats_run():
             if i > 0 and i%1000 == 0:
                 print i, int(i/(clock()-start+1e-6)),'steps/s'
             e.step()
+            n_steps -= 1
+            if n_steps == 0: break
     except FinishException:
         print 'execution finished'
     finally:
@@ -94,6 +97,7 @@ def main():
     
 if __name__ == '__main__':
     #main()
-    stats_run()
+    test()
+    cProfile.run('stats_run(10000)', 'profile')
     #generate_trace()
     
