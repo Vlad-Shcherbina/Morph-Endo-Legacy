@@ -93,7 +93,5 @@ def main():
         
     
 if __name__ == '__main__':
-    #main()
-    stats_run()
-    #generate_trace()
+    main()
     

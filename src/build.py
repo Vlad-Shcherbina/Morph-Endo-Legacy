@@ -263,7 +263,15 @@ def main():
     frame = 0
     
     for rna in fin:
-        b.run_command(rna.strip())
+        rna = rna.strip()
+        cmd = commands.get(rna)
+        #print cmd
+        #if cmd == "add bitmap":
+        #    img = b.get_state_image()
+        #    img.save("precheck_prefix.png") # to extract prefix that is removed afterwards
+        #    raw_input()
+            
+        b.run_command(rna)
         #if b.cost > 1000:
         #    print 'saving frame', frame
         #    b.get_state_image().save('f:/temp/frames/frame{:04}.png'.format(frame))

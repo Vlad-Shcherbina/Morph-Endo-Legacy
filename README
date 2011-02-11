@@ -1,1 +1,12 @@
 This whole dir is eclipse pydev project.
+
+
+
+Layout:
+src/
+    sources, apparently
+data/
+    endo.dna -- ignored (dl from http://save-endo.cs.uu.nl/endo.zip)
+    <prefix>.dna
+    <prefix>.rna -- ignored (produce by execute.py)
+    <prefix>.png -- ignored (produce by build.py)
