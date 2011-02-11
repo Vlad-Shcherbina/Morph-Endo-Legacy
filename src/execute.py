@@ -3,14 +3,17 @@ from time import clock
 import sys
 import argparse
 
-#from blist import blist
-import psyco
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
 
 from Executor import Executor, FinishException
+   
 
 
-psyco.full()
-       
+
 endo_file_name = '../data/endo.dna'    
  
 
