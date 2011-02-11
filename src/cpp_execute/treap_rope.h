@@ -47,22 +47,31 @@ Node* Node::concat_with(Node *other) {
 
 
 struct Leaf : Node {
-	std::string s;
+	char *s; // no null at the end
+	int begin, end;
 
-	Leaf(std::string s) : s(s) {
-		this->heap_key = heap_key;
+	Leaf(std::string str) {
+		this->heap_key = MAX_HEAP_KEY;
+		s = new char[str.length()];
+		memcpy(s, &str[0], str.length());
+		begin = 0;
+		end = str.length();
+	}
+
+	Leaf(char *s, int begin, int end) : s(s), begin(begin), end(end) {
+		this->heap_key = MAX_HEAP_KEY;
 	}
 
 	virtual bool is_leaf() { return true; }
-	virtual int length() { return s.length(); }
-	virtual std::string as_string() { return s; }
+	virtual int length() { return end-begin; }
+	virtual std::string as_string() { return std::string(s+begin, s+end); }
 	virtual Node* slice(int begin, int end) {
 		assert(0 <= begin);
 		assert(begin <= end);
 		assert(end <= length());
 		if (begin == 0 && end == length())
 			return this;
-		return new Leaf(s.substr(begin, end-begin));
+		return new Leaf(s, this->begin+begin, this->begin+end);
 	}
 };
 
@@ -101,7 +110,7 @@ struct InnerNode : Node {
 static Node* concat(Node *left, Node *right) {
 	if (left->is_leaf() && right->is_leaf()) {
 		if (left->length() + right->length() < 100) 
-			return new Leaf(((Leaf*)left)->s + ((Leaf*)right)->s);
+			return new Leaf(left->as_string()+right->as_string());
 		else
 			return new InnerNode((unsigned int)rand()%MAX_HEAP_KEY, left, right);
 	}
