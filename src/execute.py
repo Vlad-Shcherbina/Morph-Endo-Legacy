@@ -10,12 +10,7 @@ try:
 except ImportError:
     pass
 
-use_cython = False
-if use_cython:
-    import pyximport; pyximport.install(build_dir=".",build_in_temp=False)
-    from Executorx import Executor, FinishException
-else:
-    from Executor import Executor, FinishException
+from Executor import Executor, FinishException
   
 
 
@@ -90,9 +85,9 @@ def main():
     
     start = clock()
     
-    #for r in e.obtain_rna():
-    #    print>>rna, r
-    e.dump_rna(rna)
+    for r in e.obtain_rna():
+        print>>rna, r
+    #e.dump_rna(rna)
     
     print 'it took', clock()-start
     print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
@@ -104,8 +99,8 @@ def main():
 if __name__ == '__main__':
     #main()
     #test()
-    #stats_run()
+    stats_run(10000)
     #main()
-    cProfile.run('stats_run(10000)', 'profile')
+    #cProfile.run('stats_run(10000)', 'profile')
     #generate_trace()
     
