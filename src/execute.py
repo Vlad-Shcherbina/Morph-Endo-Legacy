@@ -15,13 +15,7 @@ from Executor import Executor, FinishException
 
 
 endo_file_name = '../data/endo.dna'    
- 
-
-def limit_string(s, maxlen=10):
-    if len(s) <= maxlen:
-        return ''.join(s)
-    return '{}... ({} bases)'.format(''.join(s[:maxlen]), len(s))
-            
+             
 
 def test():
     # tests from task description
@@ -70,7 +64,7 @@ def stats_run():
         print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
         print 'pattern freqs', e.pattern_freqs
         print 'template freqs', e.template_freqs
-        print 'prefix len freqs', e.prefix_len_freqs
+        print 'codon len freqs', e.codon_len_freqs
             
             
 def main():
@@ -101,4 +95,5 @@ def main():
 if __name__ == '__main__':
     #main()
     stats_run()
+    #generate_trace()
     

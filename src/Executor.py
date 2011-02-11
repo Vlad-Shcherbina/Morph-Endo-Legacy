@@ -1,34 +1,41 @@
 from collections import defaultdict
 from blist import blist
-import kmp
 
-from helpers import protect, asnat
+import kmp
+from helpers import protect, asnat, limit_string
 from items import Base, OpenParen, open_paren, CloseParen, close_paren,\
     Skip, Search, Reference, Length 
 
+
+#dna_type is something that supports following operations:
+#    empty initialization
+#    initialization from string
+#    __len__()
+#    [index]
+#    [begin:end] -- produces dna_type as well
+#    append(char)
+#    extend(dna_type)
+#  
 dna_type = blist
+
 
 class FinishException(Exception):
     pass
+
         
 class Executor(object):
     def __init__(self, dna):
-        assert all(c in 'ICFP' for c in dna)
+        #assert all(c in 'ICFP' for c in dna)
         self.dna = dna_type(dna)
         self.rna = []
         self.cost = 0
         self.debug = False
         self.iteration = 0
-        self.init_dna_scan()
         self.pattern_freqs = defaultdict(int)
         self.template_freqs = defaultdict(int)
-        self.prefix_len_freqs = defaultdict(int)
-         
-    def init_dna_scan(self):
-        self.index = 0
-        self.dna_iter = iter(self.dna)
-        self.saved_prefix = None
-    
+        self.codon_len_freqs = defaultdict(int)
+        self.begin_dna_scan()
+             
     def obtain_rna(self):
         try:
             while True:
@@ -63,85 +70,60 @@ class Executor(object):
                 
         finally:
             self.cost += self.index
-            del self.dna[:self.index]
+            self.dna = self.dna[self.index:len(self.dna)]
             
         self.matchreplace(p, t)
-        self.init_dna_scan()
+        self.begin_dna_scan()
         self.iteration += 1
         
         if self.debug:
             print 'len(rna) =', len(self.rna)
             print
-    
-#    def read_prefix_old(self):
-#        '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
-#        dna = self.dna
-#        prefix = ''
-#        while True:
-#            if self.index == len(dna):
-#                prefix_len_freqs[len(prefix)] += 1
-#                return prefix
-#            prefix += dna[self.index]
-#            self.index += 1
-#            if prefix[-1] != 'I' or len(prefix) == 3:
-#                prefix_len_freqs[len(prefix)] += 1
-#                return prefix
-            
-    def read_prefix(self):
-        if self.saved_prefix:
-            result = self.saved_prefix
-            self.saved_prefix = None
-            self.index += len(result)
-            return result
-        dna = self.dna
-        len_dna = len(dna)
-        dna_iter = self.dna_iter
-        local_next = next
-        i = self.index
-        if i < len_dna:
-            #a = dna[i]
-            a = local_next(dna_iter)
-            i += 1
-            if a != 'I':
-                self.index = i
-                return a
-            if i < len_dna:
-                #b = dna[i]
-                b = local_next(dna_iter)
-                i += 1
-                if b != 'I':
-                    self.index = i
-                    return a+b
-                if i < len_dna:
-                    #c = dna[i]
-                    c = local_next(dna_iter)
-                    i += 1
-                    self.index = i
-                    return a+b+c
-                self.index = i
-                return a+b
-            self.index = i
-            return a
-        return ''
-    
-    def unread_prefix(self, prefix):
-        assert self.saved_prefix is None
-        self.index -= len(prefix)
-        self.saved_prefix = prefix
 
+    def begin_dna_scan(self):
+        self.index = 0
+        self.saved_codon = None # because we sometimes unread codon
+        
     def read_base(self):
-        assert self.saved_prefix is None
+        '''return base or empty string in case of EOF'''
+        assert self.saved_codon is None #because of the structure of the parser
         if self.index == len(self.dna):
             return ''
         self.index += 1
-        #return self.dna[self.index-1]
-        return next(self.dna_iter)
+        return self.dna[self.index-1]
+        
+    def read_codon(self):
+        '''return "", C, F, P, IC, IF, IP, IIC, IIF, IIP or III'''
+        # it turned out to be useful for parsing pattern, template and consts
+        if self.saved_codon is not None:
+            result = self.saved_codon
+            self.saved_codon = None
+            self.index += len(result)
+            return result
+        
+        dna = self.dna
+        codon = ''
+        while True:
+            a = self.read_base()
+            if a == '':
+                self.codon_len_freqs[len(codon)] += 1
+                return codon
+            codon += a
+            if a != 'I' or len(codon) == 3:
+                self.codon_len_freqs[len(codon)] += 1
+                return codon
+            
+    
+    def unread_codon(self, codon):
+        assert self.saved_codon is None
+        self.index -= len(codon)
+        self.saved_codon = codon
         
     def pattern(self):
         result = []
         lvl = 0
         while True:
-            a = self.read_prefix()
+            a = self.read_codon()
             
             base = Base.decode.get(a)
             if base is not None:
@@ -186,7 +168,7 @@ class Executor(object):
     def consts(self):
         result = []
         while True:
-            a = self.read_prefix()
+            a = self.read_codon()
             
             if a == 'C':
                 result.append('I')
@@ -201,7 +183,7 @@ class Executor(object):
                 result.append('P')
                 
             else:
-                self.unread_prefix(a)
+                self.unread_codon(a) #it will be later consumed in pattern()
                 break
             
         return ''.join(result)
@@ -209,7 +191,7 @@ class Executor(object):
     def template(self):
         result = []
         while True:
-            a = self.read_prefix()
+            a = self.read_codon()
             
             base = Base.decode.get(a)
             if base is not None:
@@ -238,7 +220,6 @@ class Executor(object):
         c = []
         dna = self.dna
         for p in pattern:
-            #print p
             tp = type(p)
             if tp is Base:
                 self.cost += 1
@@ -246,14 +227,16 @@ class Executor(object):
                     i += 1
                 else:
                     if self.debug:
-                        print 'failed match'
+                        print 'failed match (base)'
                     return
+                
             elif tp is Skip:
                 i += p
                 if i > len(dna):
                     if self.debug:
-                        print 'failed match'
+                        print 'failed match (skip)'
                     return
+                
             elif tp is Search:
                 j = next(kmp.find(dna, p, start=i), None)
                 if j is not None:
@@ -262,18 +245,9 @@ class Executor(object):
                 else:
                     self.cost += len(dna)-i
                     if self.debug:
-                        print 'failed match'
+                        print 'failed match (search)'
                     return
-#                for j in xrange(i, len(dna)-len(p)+1):
-#                    if ''.join(dna[j:j+len(p)]) == p:
-#                        self.cost += j+len(p)-i
-#                        i = j+len(p)
-#                        break
-#                else:
-#                    self.cost += len(dna)-i
-#                    if self.debug:
-#                        print 'failed match'
-#                    return
+                
             elif tp is OpenParen:
                 c.append(i)
             elif tp is CloseParen:
@@ -286,7 +260,9 @@ class Executor(object):
             for j, ee in enumerate(e):
                 print 'e[{}] = {}'.format(j, limit_string(dna[ee[0]: ee[1]]))
         r = self.replacement(template, e)
-        dna[:i] = r
+        dna = dna[i:len(dna)]
+        r.extend(dna)
+        self.dna = r
         
     def replacement(self, template, e):
         r = dna_type()
