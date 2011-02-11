@@ -37,18 +37,18 @@ class Executor(object):
         self.codon_len_freqs = defaultdict(int)
         self.begin_dna_scan()
              
-    def obtain_rna(self):
-        try:
-            while True:
-                self.step()
-                for r in self.rna:
-                    yield r
-                self.rna = []
-        except FinishException:
-            pass
-        for r in self.rna:
-            yield r
-        self.rna = []
+#    def obtain_rna(self):
+#        try:
+#            while True:
+#                self.step()
+#                for r in self.rna:
+#                    yield r
+#                self.rna = []
+#        except FinishException:
+#            pass
+#        for r in self.rna:
+#            yield r
+#        self.rna = []
         
     def step(self):
         if self.debug:
@@ -156,7 +156,10 @@ class Executor(object):
                 result.append(close_paren)
                 
             elif a == 'III':
-                self.rna.append(''.join(self.read_base() for i in range(7)))
+                command = ''
+                for i in range(7):
+                    command += self.read_base()
+                self.rna.append(command)
                 
             else:
                 raise FinishException()
@@ -218,7 +221,10 @@ class Executor(object):
                 result.append(Length(self.nat()))
             
             elif a == 'III':
-                self.rna.append(''.join(self.read_base() for i in range(7)))
+                command = ''
+                for i in range(7):
+                    command += self.read_base()
+                self.rna.append(command)
                 
             else:
                 raise FinishException(a)

@@ -10,8 +10,10 @@ try:
 except ImportError:
     pass
 
-from Executor import Executor, FinishException
-   
+#from Executor import Executor, FinishException
+import pyximport; pyximport.install(build_dir=".",build_in_temp=False)
+from Executorx import Executor, FinishException
+  
 
 
 
