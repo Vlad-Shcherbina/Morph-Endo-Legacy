@@ -13,23 +13,10 @@ except ImportError:
 from Executor import Executor, FinishException
 from dna_code import endo
   
-             
-
-def test():
-    # tests from task description
-    for q, a in [
-        ('IIPIPICPIICICIIFICCIFPPIICCFPC', 'PICFC'),
-        ('IIPIPICPIICICIIFICCIFCCCPPIICCFPC', 'PIICCFCFFPC'),
-        ('IIPIPIICPIICIICCIICFCFC', 'I'),
-        ]:
-        e = Executor(q)
-        e.step()
-        result = ''.join(e.dna)
-        assert result == a
-    
+                 
     
 def generate_trace():
-    e = Executor(endo)
+    e = Executor(endo())
     
     e.debug = True
     for i in range(10):
@@ -37,7 +24,7 @@ def generate_trace():
         
         
 def stats_run(n_steps=0):        
-    e = Executor(endo)
+    e = Executor(endo())
     #e.debug = True
     
     start = clock()
@@ -61,15 +48,13 @@ def stats_run(n_steps=0):
             
             
 def main():
-    test()
-    
     prefix_file, = sys.argv[1:]
     
     prefix = open(prefix_file+'.dna').read()
     
     rna = open(prefix_file+'.rna', 'w')
     
-    e = Executor(prefix+endo)
+    e = Executor(prefix+endo())
     #e.debug = True
     
     start = clock()

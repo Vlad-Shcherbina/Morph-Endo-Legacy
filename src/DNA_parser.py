@@ -36,6 +36,7 @@ class DNA_parser(object):
         if self.saved_codon is not None:
             result = self.saved_codon
             self.saved_codon = None
+            self.index += len(result)
             return result
         
         dna = self.dna
@@ -58,4 +59,5 @@ class DNA_parser(object):
     
     def unread_codon(self, codon):
         assert self.saved_codon is None
+        self.index -= len(codon)
         self.saved_codon = codon

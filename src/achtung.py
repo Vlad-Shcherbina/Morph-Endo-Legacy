@@ -3,12 +3,12 @@ from dna_code import endo
 
 
 def main():
-    text = endo[0x3e78:0x6848]
+    text = endo()[0x3e78:0x6848]
     with open('achtung.txt', 'w') as fout:
         for i in range(0, len(text), 16):
             print text[i:i+16]
     
-    png = endo[0x6c58:]
+    png = endo()[0x6c58:]
     i = png.find('PP', )
     png, audio = png[:i], png[i+2:]
     

@@ -37,3 +37,11 @@ class Reference(Reference):
 class Length(int):
     def __str__(self):
         return '|{}|'.format(int.__str__(self)) 
+    
+class RNA_Item(str):
+    def __str__(self):
+        return '['+self+']'
+    
+class TerminationItem():
+    def __str__(self):
+        return 'END'

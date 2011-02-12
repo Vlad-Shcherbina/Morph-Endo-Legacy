@@ -4,7 +4,7 @@ import kmp
 from helpers import limit_string
 from dna_code import protect, asnat
 from items import Base, OpenParen, open_paren, CloseParen, close_paren, \
-    Skip, Search, Reference, Length 
+    Skip, Search, Reference, Length, RNA_Item 
 
 from DNA_parser import DNA_parser, dna_type
   
@@ -18,9 +18,11 @@ class Executor(object):
         self.template_freqs = defaultdict(int)
         self.codon_len_freqs = defaultdict(int)
         self.freqs = [self.pattern_freqs, self.template_freqs, self.codon_len_freqs]
+        self.explicit_rna_items = False
 
         self.dna = dna_type(dna)
         self.parser = DNA_parser(self.dna, self.freqs)
+        self.item_starts = []
         self.rna = []
         self.cost = 0
         self.debug = False
@@ -62,6 +64,7 @@ class Executor(object):
             index = self.parser.index
             self.cost += index
             self.parser = None
+            self.item_starts = []
             del self.dna[:index]
             
         self.matchreplace(p, t)
@@ -77,6 +80,7 @@ class Executor(object):
         lvl = 0
         parser = self.parser
         while True:
+            self.item_starts.append(parser.index)
             a = parser.read_codon()
             
             base = Base.decode.get(a)
@@ -104,7 +108,10 @@ class Executor(object):
                 command = ''
                 for i in range(7):
                     command += parser.read_base()
-                self.rna.append(command)
+                if self.explicit_rna_items:
+                    result.append(RNA_Item(command))
+                else:
+                    self.rna.append(command)
                 
             else:
                 raise FinishException()
@@ -149,6 +156,7 @@ class Executor(object):
         result = []
         parser = self.parser
         while True:
+            self.item_starts.append(parser.index)
             a = parser.read_codon()
             
             base = Base.decode.get(a)
@@ -170,7 +178,10 @@ class Executor(object):
                 command = ''
                 for i in range(7):
                     command += parser.read_base()
-                self.rna.append(command)
+                if self.explicit_rna_items:
+                    result.append(RNA_Item(command))
+                else:
+                    self.rna.append(command)
                 
             else:
                 raise FinishException(a)
@@ -249,3 +260,21 @@ class Executor(object):
                     begin, end = 0, 0
                 r.extend(asnat(end - begin))
         return r
+
+
+def test():
+    for q, a in [
+        ('IIPIPICPIICICIIFICCIFPPIICCFPC', 'PICFC'),
+        ('IIPIPICPIICICIIFICCIFCCCPPIICCFPC', 'PIICCFCFFPC'),
+        ('IIPIPIICPIICIICCIICFCFC', 'I'),
+        ]:
+        e = Executor(q)
+        e.step()
+        result = ''.join(e.dna)
+        assert result == a
+    print 'tests from task description passed'
+
+
+if __name__ == '__main__':
+    test()
+    
