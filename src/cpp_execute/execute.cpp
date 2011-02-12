@@ -59,8 +59,8 @@ void stats_run(int n_steps=2000000000)
 	endo >> dna;
 	endo.close();
 
-	prefix = "IIPIFFCPICICIICPIICIPPPICIIC";
-	//prefix = "";
+	//prefix = "IIPIFFCPICICIICPIICIPPPICIIC";
+	prefix = "";
     
 	dna_type complete_dna = prefix + dna;
 
@@ -71,9 +71,8 @@ void stats_run(int n_steps=2000000000)
 	{
 		for (int i = 0; i < n_steps; i++)
 		{
-			std::cout << i << std::endl;
-			if ((i > 0) && (i%1000 == 0))
-				std::cout <<  i << int(i/(clock()-start+1e-6)) << "steps/s" << std::endl;
+			if ((i > 0) && (i%10 == 0))
+				std::cout <<  i << " " << int((i/(clock()-start+1e-6))*CLOCKS_PER_SEC) << "steps/s" << std::endl;
 			e.step();
 		}
 	}

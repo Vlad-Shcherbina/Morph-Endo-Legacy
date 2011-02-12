@@ -39,7 +39,7 @@ dna_type protect(dna_type* pdna, int begin, int end, int level)
 	{
 		i = c; c = f; f = p; p = quote(p);
 	}
-
+	
 	dna_type result;
 	for (int j = begin; j < end; j++)
 		switch ((*pdna)[j])
@@ -60,6 +60,7 @@ dna_type asnat(int n)
 		result += (n % 2) ? 'C' : 'I';
 		n /= 2;
 	}
+	result += 'P';
 	return result;
 }
 

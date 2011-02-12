@@ -13,8 +13,8 @@ except ImportError:
 from Executor import Executor, FinishException
 from dna_code import endo
   
-                 
-    
+
+
 def generate_trace(n_steps=10):
     e = Executor(endo())
     
@@ -69,8 +69,8 @@ def main():
 
     
 if __name__ == '__main__':
-	generate_trace(25)
-	#main()
+	#generate_trace(25)
+	main()
     #test()
     #stats_run(10000)
     #main()
