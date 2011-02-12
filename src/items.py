@@ -3,6 +3,7 @@ from collections import namedtuple
 class OpenParen(object):
     def __str__(self):
         return '('
+    
 open_paren = OpenParen()    
 
 class CloseParen(object):
@@ -42,6 +43,3 @@ class RNA_Item(str):
     def __str__(self):
         return '['+self+']'
     
-class TerminationItem():
-    def __str__(self):
-        return 'END'
