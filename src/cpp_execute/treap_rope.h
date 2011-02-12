@@ -24,8 +24,10 @@ Operations:
 #include <vector>
 #include <cstdlib>
 #include <cassert>
+#include <iostream>
+#include <algorithm>
 
-const int MAX_HEAP_KEY = 100000;
+const int MAX_HEAP_KEY = 1000000;
 
 struct Iterator;
 
@@ -36,13 +38,16 @@ struct Node {
 	virtual int length() = 0;
 	virtual std::string as_string() = 0;
 	virtual Node* slice(int begin, int end) = 0;
-
+	virtual void debug_print(int indent = 0) = 0;
+	virtual int depth() = 0;
 	Node* concat_with(Node *other);
 };
 
-static Node* concat(Node *left, Node *right);
+Node* concat(Node *left, Node *right);
 Node* Node::concat_with(Node *other) {
-	return concat(this, other);
+	Node* result = concat(this, other);
+	assert(result->as_string() == this->as_string()+other->as_string()); // ridiculously slow
+	return result;
 }
 
 
@@ -73,6 +78,14 @@ struct Leaf : Node {
 			return this;
 		return new Leaf(s, this->begin+begin, this->begin+end);
 	}
+	virtual void debug_print(int indent = 0) {
+		for (int i = 0; i<indent; i++)
+			std::cout<<' ';
+		std::cout<<"Leaf("<<as_string()<<")"<<std::endl;
+	}
+	virtual int depth() {
+		return 0;
+	}
 };
 
 
@@ -96,40 +109,64 @@ struct InnerNode : Node {
 		assert(0 <= begin);
 		assert(begin <= end);
 		assert(end <= length());
+		Node *result;
 		if (begin == 0 && end == length())
-			return this;
-		int L = left->length();
-		if (end <= L)
-			return left->slice(begin, end);
-		if (begin >= L)
-			return right->slice(begin-L, end-L);
-		return concat(left->slice(begin, L), right->slice(0, end-L));
+			result = this;
+		else {
+			int L = left->length();
+			if (end <= L)
+				result = left->slice(begin, end);
+			else if (begin >= L)
+				result = right->slice(begin-L, end-L);
+			else
+				result = concat(left->slice(begin, L), right->slice(0, end-L));
+		}
+		assert(result->as_string() == as_string().substr(begin, end-begin)); // ridiculously slow
+		return result;
+	}
+	virtual void debug_print(int indent = 0) {
+		for (int i = 0; i<indent; i++)
+			std::cout<<' ';
+		std::cout<<"Node "<<heap_key<<":"<<std::endl;
+		left->debug_print(indent+2);
+		right->debug_print(indent+2);
+	}
+	virtual int depth() {
+		return 1+std::max(left->depth(), right->depth());
 	}
 };
 
-static Node* concat(Node *left, Node *right) {
-	if (left->is_leaf() && right->is_leaf()) {
-		if (left->length() + right->length() < 100) 
-			return new Leaf(left->as_string()+right->as_string());
-		else
-			return new InnerNode((unsigned int)rand()%MAX_HEAP_KEY, left, right);
-	}
+Node *merge(int new_key, Node* left, Node* right) {
+	if (new_key <= left->heap_key && new_key <= right->heap_key)
+		return new InnerNode(new_key, left, right);
 	if (left->heap_key < right->heap_key)
 		return new InnerNode(
 			left->heap_key, 
 			((InnerNode*)left)->left, 
-			concat(((InnerNode*)left)->right, right) );
+			merge(new_key, ((InnerNode*)left)->right, right) );
 	else
 		return new InnerNode(
 			right->heap_key,
-			concat(left, ((InnerNode*)right)->left), 
-			((InnerNode*)right)->right );
+			merge(new_key, left, ((InnerNode*)right)->left),
+			((InnerNode*)right)->right);
+}
+
+Node* concat(Node *left, Node *right) {
+	if (left->is_leaf() && right->is_leaf() &&
+		left->length() + right->length() < 1) 
+			return new Leaf(left->as_string()+right->as_string());
+
+	int new_key = (unsigned int)rand()%MAX_HEAP_KEY;
+	return merge(new_key, left, right);
+
+	//return new InnerNode(std::min(left->heap_key, right->heap_key), left, right); // unbalanced implementation
 }
 
 
 
 class Iterator { 
 	std::vector<InnerNode*> path;
+	std::vector<bool> dirs; // false - left, true - right
 	Leaf *leaf;
 	int position;
 
@@ -139,10 +176,12 @@ public:
 	Iterator(Node *node) {
 		while (!node->is_leaf()) {
 			path.push_back((InnerNode*)node);
+			dirs.push_back(false);
 			node = ((InnerNode*)node)->left;
 		}
 		leaf = (Leaf*)node;
 		position = 0;
+		valid = true;
 		advance(0); // to deal with possible empty leafs
 	}
 
@@ -159,29 +198,34 @@ public:
 		}
 		d += position;
 
-		Node *prev = leaf;
+		//Node *prev = leaf;
 		while (true) {
 			if (path.empty()) {
 				valid = false;
 				return; // we reached the end
 			}
-			if (path.back()->right == prev) {
+			if (dirs.back()) {
 				d += path.back()->left->length();
 			}
-			prev = path.back();
+			//prev = path.back();
 			if (d < path.back()->length())
 				break;
 			path.pop_back();
+			dirs.pop_back();
 		} 
+		dirs.pop_back();
 
 		while (true) {
 			Node *next;
-			if (d < path.back()->length())
+			if (d < path.back()->left->length()) {
 				next = path.back()->left;
-			else {
+				dirs.push_back(false);
+			} else {
 				d -= path.back()->left->length();
 				next = path.back()->right;
+				dirs.push_back(true);
 			}
+			
 			if (next->is_leaf()) {
 				leaf = (Leaf*)next;
 				position = d;
@@ -191,3 +235,52 @@ public:
 		}
 	}
 };
+
+
+bool check_node(Node *node) {
+	std::string s = node->as_string();
+	assert(s.length() == node->length());
+	Iterator iter = Iterator(node);
+	for (std::string::iterator i = s.begin(); i != s.end(); i++, iter.advance(1))
+		assert(iter.current() == *i);
+	assert(!iter.valid);
+	return true;
+}
+
+
+
+void test() {
+	Node *hello = new Leaf("h");
+	Node *world = new Leaf("w");
+	//check_node(hello);
+	Node *hw = hello->concat_with(world);
+	//hw->debug_print();
+	check_node(hw);
+
+	//concatenation
+	for (int i = 0; i<100; i++) {
+		if (i%100 == 0)
+			std::cout<<i<<std::endl;
+		hw = hw->concat_with(hello);
+		//hw->debug_print();
+		check_node(hw);
+	}
+	check_node(hw);
+
+	//random access
+	for (int i = 0; i<100; i++) {
+		Iterator iter = Iterator(hw);
+		int pos = 0;
+		std::string s = hw->as_string();
+		while (pos < hw->length()) {
+			std::cout<<pos<<" ";
+			assert(s[pos] == iter.current());
+			int d = (unsigned int)rand()%100;
+			pos += d;
+			iter.advance(d);
+		}
+		assert(!iter.valid);
+		std::cout<<std::endl;
+	}
+	std::cout<<"hw depth "<<hw->depth()<<std::endl;
+}

@@ -8,6 +8,8 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+	test();
+
 	Node *s = new Leaf("hello");
 	Node *sss = s->concat_with(s->concat_with(s));
 	Node *slice = sss->slice(1, 7);
