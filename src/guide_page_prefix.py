@@ -10,7 +10,7 @@ def page_prefix(n):
     s = bin(n)[2:]
     s = s[::-1]
     s = s.replace('0', 'C').replace('1', 'F')
-    s = 'IIP IFFCPICFPPIC IIC {} IIC IPPP {} IIC'.format('C'*len(s),s)
+    s = 'IIP IFFCPICFPPIC IIC {0} IIC IPPP {1} IIC'.format('C'*len(s),s)
     return s.replace(' ','')
 
 
