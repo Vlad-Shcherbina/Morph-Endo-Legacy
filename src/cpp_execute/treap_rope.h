@@ -27,7 +27,8 @@ Operations:
 #include <iostream>
 #include <algorithm>
 
-const int MAX_HEAP_KEY = 1000000;
+const int MAX_HEAP_KEY = 1000000000;
+const int CONCAT_THRESHOLD = 32;
 
 struct Iterator;
 
@@ -57,8 +58,12 @@ struct Leaf : Node {
 
 	Leaf(std::string str) {
 		this->heap_key = MAX_HEAP_KEY;
-		s = new char[str.length()];
-		memcpy(s, &str[0], str.length());
+		if (str.empty())
+			s = 0;
+		else {
+			s = new char[str.length()];
+			memcpy(s, &str[0], str.length());
+		}
 		begin = 0;
 		end = str.length();
 	}
@@ -153,10 +158,10 @@ Node *merge(int new_key, Node* left, Node* right) {
 
 Node* concat(Node *left, Node *right) {
 	if (left->is_leaf() && right->is_leaf() &&
-		left->length() + right->length() < 1) 
+		left->length() + right->length() <= CONCAT_THRESHOLD) 
 			return new Leaf(left->as_string()+right->as_string());
 
-	int new_key = (unsigned int)rand()%MAX_HEAP_KEY;
+	int new_key = rand()%MAX_HEAP_KEY;
 	return merge(new_key, left, right);
 
 	//return new InnerNode(std::min(left->heap_key, right->heap_key), left, right); // unbalanced implementation
@@ -187,7 +192,7 @@ public:
 
 	const char& current() {
 		assert(valid);
-		return leaf->s[position];
+		return leaf->s[leaf->begin+position];
 	}
 
 	void advance(int d) {
@@ -250,8 +255,8 @@ bool check_node(Node *node) {
 
 
 void test() {
-	Node *hello = new Leaf("h");
-	Node *world = new Leaf("w");
+	Node *hello = new Leaf("hello");
+	Node *world = new Leaf("world");
 	//check_node(hello);
 	Node *hw = hello->concat_with(world);
 	//hw->debug_print();
@@ -259,13 +264,13 @@ void test() {
 
 	//concatenation
 	for (int i = 0; i<100; i++) {
-		if (i%100 == 0)
+		if (i%20 == 0)
 			std::cout<<i<<std::endl;
 		hw = hw->concat_with(hello);
 		//hw->debug_print();
-		check_node(hw);
+		assert(check_node(hw));
 	}
-	check_node(hw);
+	assert(check_node(hw));
 
 	//random access
 	for (int i = 0; i<100; i++) {
@@ -273,14 +278,23 @@ void test() {
 		int pos = 0;
 		std::string s = hw->as_string();
 		while (pos < hw->length()) {
-			std::cout<<pos<<" ";
+			//std::cout<<pos<<" ";
 			assert(s[pos] == iter.current());
-			int d = (unsigned int)rand()%100;
+			int d = rand()%100;
 			pos += d;
 			iter.advance(d);
 		}
 		assert(!iter.valid);
-		std::cout<<std::endl;
+		//std::cout<<std::endl;
+	}
+
+	//slices
+	for (int i = 0; i<100; i++) {
+		int begin = rand()%(hw->length()+1);
+		int end = begin+rand()%(hw->length()-begin+1);
+		Node *slice = hw->slice(begin, end);
+		assert(check_node(slice));
+		std::cout<<begin<<" "<<end<<std::endl;
 	}
 	std::cout<<"hw depth "<<hw->depth()<<std::endl;
 }
