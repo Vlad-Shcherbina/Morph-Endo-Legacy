@@ -13,13 +13,13 @@ except ImportError:
 from Executor import Executor, FinishException
 from dna_code import endo
   
-                 
-    
-def generate_trace():
+
+
+def generate_trace(n_steps=10):
     e = Executor(endo())
     
     e.debug = True
-    for i in range(10):
+    for i in range(n_steps):
         e.step()
         
         
@@ -67,10 +67,10 @@ def main():
     
     rna.close()
 
-        
     
 if __name__ == '__main__':
-    main()
+	#generate_trace(25)
+	main()
     #test()
     #stats_run(10000)
     #main()

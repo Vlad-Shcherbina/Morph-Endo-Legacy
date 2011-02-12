@@ -32,12 +32,12 @@ Reference = namedtuple('Reference', 'n level')
 class Reference(Reference):
     def __str__(self):
         if self.level == 0:
-            return '\\{}'.format(self.n)
-        return '\\{}_{}'.format(self.n, self.level)
+            return '\\{0}'.format(self.n)
+        return '\\{0}_{0}'.format(self.n, self.level)
     
 class Length(int):
     def __str__(self):
-        return '|{}|'.format(int.__str__(self)) 
+        return '|{0}|'.format(int.__str__(self)) 
     
 class RNA_Item(str):
     def __str__(self):

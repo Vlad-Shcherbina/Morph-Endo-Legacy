@@ -231,7 +231,7 @@ class Executor(object):
         if self.debug:
             print 'succesful match of length', i
             for j, ee in enumerate(e):
-                print 'e[{}] = {}'.format(j, limit_string(dna[ee[0]: ee[1]]))
+                print 'e[{0}] = {1}'.format(j, limit_string(dna[ee[0]: ee[1]]))
         r = self.replacement(template, e)
         dna[:i] = r
         
