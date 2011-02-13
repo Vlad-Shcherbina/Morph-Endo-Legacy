@@ -14,16 +14,21 @@ Node *merge(int new_key, Node* left, Node* right) {
 
 	if (new_key <= left->heap_key && new_key <= right->heap_key)
 		return new InnerNode(new_key, left, right);
-	if (left->heap_key < right->heap_key)
+	if (left->heap_key < right->heap_key ||
+		left->heap_key == right->heap_key && (rand()%2)) {
+		assert(!left->is_leaf());
 		return new InnerNode(
 			left->heap_key, 
 			((InnerNode*)left)->left, 
 			merge(new_key, ((InnerNode*)left)->right, right) );
-	else
+	}
+	else {
+		assert(!right->is_leaf());
 		return new InnerNode(
 			right->heap_key,
 			merge(new_key, left, ((InnerNode*)right)->left),
 			((InnerNode*)right)->right);
+	}
 }
 
 Node* concat(Node *left, Node *right) {
