@@ -1,0 +1,1 @@
+for /R %%f in (..\data\*.png) do steganography.py %%f
