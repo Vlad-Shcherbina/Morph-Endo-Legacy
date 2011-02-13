@@ -1,0 +1,20 @@
+Prefix to access particular page of guide looks like this
+
+IIP IFFCPICFPPIC IIC C C C C C C C C C C C IIC IPPP F C C F F F C C F C F IIC
+(   ?"IFPCFFP"   )   I I I I I I I I I I I EoP \0   C I I C C C I I C I C EoT
+
+where 
+  I means zero, C means one,
+  II.....I - zeroes that were initially in dna,
+  CIIC..IC - page number in binary (1337), least significant bits to the left
+
+
+
+Known pages:
+  0 - original endo
+  1 - "don't panic" plate (precheck.png)
+  2 - navigation
+  1337 - catalog
+    + whatever is listed in catalog    
+  3 (guessed) - steganography
+  4 - it says that this page does not exist
