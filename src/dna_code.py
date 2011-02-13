@@ -1,5 +1,7 @@
 # stuff related to contents of DNA
 
+import re
+
 
 __all__ = [
     'endo',
@@ -68,18 +70,24 @@ def show_pattern_and_template(dna):
     print ' '.join(s2)
     
     
-if __name__ == '__main__':
-        
-    print 'precheck:'
-    prefix = open('../data/precheck.dna').read()
-    show_pattern_and_template(prefix+endo())
-    print
-    print 'navigation:'
-    prefix = open('../data/guide/navigation.dna').read()
-    show_pattern_and_template(prefix+endo())
-    print
-    print 'catalog:'
-    prefix = open('../data/guide/catalog.dna').read()
-    show_pattern_and_template(prefix+endo())
+def adapter():
+    # see fieldrepairing
+    adapter_signature = 'IFPICFPPCCC'
+    m1, m2 = re.finditer(adapter_signature, endo())
+    adapter = endo()[m1.end():m2.start()]
+    return adapter
+
+
+# blue zone starts after it
+blue_zone_marker = 'IFPICFPPCFIPP'
+
     
-    pass
+if __name__ == '__main__':
+    
+    #print 'precheck:'
+    #prefix = open('../data/precheck.dna').read()
+    #show_pattern_and_template(prefix+endo())
+
+    prefix = adapter()+asnat(123)+asnat(456)
+    show_pattern_and_template(prefix+endo())
+        
