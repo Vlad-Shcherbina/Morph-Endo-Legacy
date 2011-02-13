@@ -3,32 +3,14 @@ import sys
 from collections import namedtuple
 
 import Image
+import ImageDraw
 import numpy
+
+from rna_code import draw_commands, all_rna_codes, return_rna
 
 size = 600
 
-commands = {
-    'PIPIIIC': 'black',
-    'PIPIIIP': 'red',
-    'PIPIICC': 'green',
-    'PIPIICF': 'yellow',
-    'PIPIICP': 'blue',
-    'PIPIIFC': 'magenta',
-    'PIPIIFF': 'cyan',
-    'PIPIIPC': 'white',
-    'PIPIIPF': 'transparent',
-    'PIPIIPP': 'opaque',
-    'PIIPICP': 'clear',
-    'PIIIIIP': 'move',
-    'PCCCCCP': 'counter clockwise',
-    'PFFFFFP': 'clockwise',
-    'PCCIFFP': 'mark',
-    'PFFICCP': 'line',
-    'PIIPIIP': 'fill',
-    'PCCPFFP': 'add bitmap',
-    'PFFPCCP': 'compose',
-    'PFFICCF': 'clip',
-    }
+
 
 
 class Bucket(object):
@@ -100,13 +82,18 @@ class Builder(object):
             t = self.bitmap_to_image(bmp)
             t = t.resize((size//3, size//3), Image.ANTIALIAS)
             img.paste(t, (size+i%3*size//3, i//3*size//3))
+            draw = ImageDraw.Draw(img)
+            draw.ellipse((self.x-5, self.y-5, self.x+5, self.y+5), 
+                         outline=(255, 0, 0), fill=None)
+            draw.ellipse((self.markX-5, self.markY-5, self.markX+5, self.markY+5), 
+                         outline=(0, 255, 0), fill=None)
         return img
          
     def get_result_image(self):
         return self.bitmap_to_image(self.bitmaps[0])
     
     def run_command(self, cmd):
-        cmd = commands.get(cmd)
+        cmd = draw_commands.get(cmd)
         
         if cmd == 'black':
             self.bucket.add_color(0, 0, 0)
@@ -262,21 +249,31 @@ def main():
     
     frame = 0
     
+    call_stack = []
+    
+
+    #breakpoints = ['CPIPIIC']
+    breakpoints = []
+    
     for rna in fin:
         rna = rna.strip()
-        cmd = commands.get(rna)
-        #print cmd
-        #if cmd == "add bitmap":
-        #    img = b.get_state_image()
-        #    img.save("precheck_prefix.png") # to extract prefix that is removed afterwards
-        #    raw_input()
+        
+        if rna not in draw_commands:
+            if rna == return_rna:
+                #print 'return'
+                t = call_stack.pop()
+                if t in breakpoints:
+                    img = b.get_state_image()
+                    img.save('_breakpoint.png')
+                    print 'call stack:', call_stack
+                    #print 'Reached breakpoint {0} ({1}). Press enter.'.format(rna, all_rna_codes.get(rna))
+                    print 'return from function', t, '. Press enter.'
+                    raw_input()
+            else:
+                call_stack.append(all_rna_codes.get(rna, rna))
+            
             
         b.run_command(rna)
-        #if b.cost > 1000:
-        #    print 'saving frame', frame
-        #    b.get_state_image().save('f:/temp/frames/frame{:04}.png'.format(frame))
-        #    b.cost = 0
-        #    frame += 1
 
     print 'it took', clock()-start
     b.get_result_image().save(filename+'.png')

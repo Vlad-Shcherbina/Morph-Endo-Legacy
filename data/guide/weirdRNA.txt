@@ -1,0 +1,19 @@
+Weird RNA represents procedures enter and exit.
+
+For instance, rna mentioned on the plate (rna_code.return_rna) is return.
+Some other recognized rna are listed in rna_code.weird_rna.
+
+
+Guide to enrich this dictionary (actually, I don't know whether it's really
+needed, and it's labour-intensive):
+
+ * Run rna_code.py --weird --unknown <rna file> >calltree
+ * Observe resulting call tree. 
+ * Find some mysterious unrecognized rna.
+ * Set it as breakpoint in build.py (currently via source modification)
+(this breakpoint will be activated on _exit_ from corresponding procedure)
+ * Run build.py <rna file>
+ * Wait until breakpoint is reached. 
+ * Observe what was drawn as a result of this enigmatic procedure 
+in _breakpoint.png
+ * add it to rna_code.weird_rna dictionary
