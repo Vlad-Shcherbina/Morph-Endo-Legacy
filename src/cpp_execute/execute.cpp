@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const std::string endo_file_name = "..\\..\\data\\endo";
+const std::string endo_file_name = "..\\data\\endo";
 
 dna_type read_dna(std::string fname)
 {

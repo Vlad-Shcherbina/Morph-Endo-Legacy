@@ -72,8 +72,8 @@ if __name__ == '__main__':
 	#generate_trace(25)
 	#main()
     #test()
-    stats_run()
-    #main()
+    #stats_run()
+    main()
     #cProfile.run('stats_run(10000)', 'profile')
     #generate_trace()
     
