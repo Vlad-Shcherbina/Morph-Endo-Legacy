@@ -18,7 +18,7 @@ std::string limit_string(std::string &s, int maxlen=10)
 	return ss.str();
 }
 
-std::string limit_string(dna_type* pdna, int maxlen=10)
+std::string limit_string(dna_type pdna, int maxlen=10)
 {
 	std::stringstream ss;
 	if (pdna->length() <= maxlen)
@@ -46,7 +46,7 @@ std::string quote(std::string &s)
 	return result;
 }
 
-dna_type* protect(dna_type* pdna, int level)
+dna_type protect(dna_type pdna, int level)
 {
 	assert(level>=0);
 	std::string i="I", c="C", f="F", p="P";
@@ -71,7 +71,7 @@ dna_type* protect(dna_type* pdna, int level)
 	return new Leaf(result);
 }
 
-dna_type* asnat(int n)
+dna_type asnat(int n)
 {
 	std::string result;
 	while (n > 0)
@@ -83,7 +83,7 @@ dna_type* asnat(int n)
 	return new Leaf(result);
 }
 
-Executor::Executor(dna_type* pdna, bool debug) : parser(DNAParser(pdna)), pdna(pdna), debug(debug)
+Executor::Executor(dna_type pdna, bool debug) : parser(DNAParser(pdna)), pdna(pdna), debug(debug)
 {
 	rna = t_rna();
 	iteration = 0;
@@ -360,21 +360,21 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 			int begin, end;
 			begin = ee->start;
 			end = ee->end;
-			dna_type* fragment = pdna->slice(begin, end);
+			dna_type fragment = pdna->slice(begin, end);
 			std::cout << "e[" << j << "] = " << limit_string(fragment) << std::endl;
 			j++;
 		}
 	}
-	dna_type* r = replacement(t, &e);
+	dna_type r = replacement(t, &e);
 	//pdna->erase(0, i);
 	//pdna->insert(0, *r);
 	pdna = pdna->slice(i, pdna->length());
 	pdna = r->concat_with(pdna);
 }
 
-dna_type*  Executor::replacement(t_template* templ, t_environment* e)
+dna_type  Executor::replacement(t_template* templ, t_environment* e)
 {
-	dna_type* r = new Leaf("");
+	dna_type r = new Leaf("");
 
 	int n, l, begin, end;
 	char base;
@@ -416,7 +416,7 @@ dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 			}
 			else
 			{
-				dna_type* p = protect(pdna->slice(begin, end), l);
+				dna_type p = protect(pdna->slice(begin, end), l);
 				cost += p->length();
 				r = r->concat_with(p);
 			}

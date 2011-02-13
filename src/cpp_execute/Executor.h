@@ -40,7 +40,8 @@ class FinishException : std::exception {};
 
 class Executor
 {
-	dna_type* pdna;
+public:
+	dna_type pdna;
 	DNAParser parser;
 	t_rna rna;
 	int iteration;
@@ -52,10 +53,10 @@ class Executor
 	std::string consts();
 	t_template* templ();
 	void matchreplace(t_pattern* p, t_template* t);
-	dna_type* replacement(t_template* t, t_environment* e);
+	dna_type replacement(t_template* t, t_environment* e);
 
 	public:
-	Executor(dna_type* pdna, bool debug=false);
+	Executor(dna_type pdna, bool debug=false);
 	void dump_rna();
 	void dump_dna() { std::cout << pdna->as_string() << std::endl; }
 	void step();

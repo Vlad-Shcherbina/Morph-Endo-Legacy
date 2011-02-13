@@ -2,14 +2,14 @@
 
 Nodes represent strings and are immutable.
 Operations:
-  Node *pNode = new Leaf("ICFPC")
+  NodePtr pNode = new Leaf("ICFPC")
   pNode->length()
   pNode->concat_with(pNode2)
   pNode->slice(begin, end)
   pNode->as_string()
   Iterator i = Iterator(pNode);
 
-Iterators are mutable. 
+Iterators are mutable. Iterator does not hold references!
 Operations:
   i.advance(delta);
   i.current();
@@ -27,6 +27,8 @@ Operations:
 #include <iostream>
 #include <algorithm>
 
+#include "shared_ptr.h"
+
 
 //#define SLOW_ASSERTS
 
@@ -35,33 +37,46 @@ const int CONCAT_THRESHOLD = 32;
 
 struct Iterator;
 
+struct Node;
+//typedef Node *NodePtr;
+typedef shared_ptr<Node> NodePtr;
+
+extern int node_count;
+
 struct Node {
+	int ref_count;
 	int heap_key;
+
+	Node() : ref_count(0) { node_count++; }
 
 	virtual bool is_leaf() = 0;
 	virtual int length() = 0;
 	virtual std::string as_string() = 0;
-	virtual Node* slice(int begin, int end) = 0;
+	virtual NodePtr slice(int begin, int end) = 0;
 	virtual void debug_print(int indent = 0) = 0;
 	virtual int depth() = 0;
-	Node* concat_with(Node *other);
+	NodePtr concat_with(NodePtr other);
 	virtual void accumulate_string(std::string &s) = 0;
-	virtual ~Node() {
-		std::cout<<"never delete me, I'm shared"<<std::endl;
-		assert(false); // never delete me, I'm shared
-	}
 
+protected:
+	virtual ~Node() {
+		node_count--;
+		//std::cout<<"deleting node"<<std::endl;
+		//std::cout<<"never delete me, I'm shared"<<std::endl;
+		//assert(false); // never delete me, I'm shared
+	}
+	friend class shared_ptr<Node>;
 };
 
-Node* concat(Node *left, Node *right);
-Node *merge(int new_key, Node* left, Node* right);
+NodePtr concat(NodePtr left, NodePtr right);
+NodePtr merge(int new_key, NodePtr left, NodePtr right);
 
-bool check_node(Node *node);
+bool check_node(NodePtr node);
 void test();
 
 
 struct Leaf : Node {
-	char *s; // no null at the end
+	char* s; // no null at the end
 	int begin, end;
 
 	Leaf(std::string str) {
@@ -83,7 +98,7 @@ struct Leaf : Node {
 	virtual bool is_leaf() { return true; }
 	virtual int length() { return end-begin; }
 	virtual std::string as_string() { return std::string(s+begin, s+end); }
-	virtual Node* slice(int begin, int end) {
+	virtual NodePtr slice(int begin, int end) {
 		assert(0 <= begin);
 		assert(begin <= end);
 		assert(end <= length());
@@ -111,9 +126,9 @@ struct Leaf : Node {
 
 struct InnerNode : Node {
 	int len;
-	Node *left, *right;
+	NodePtr left, right;
 
-	InnerNode(int heap_key, Node *left, Node *right) :
+	InnerNode(int heap_key, NodePtr left, NodePtr right) :
 		left(left),
 		right(right),
 		len(left->length()+right->length()) {
@@ -129,14 +144,14 @@ struct InnerNode : Node {
 	virtual bool is_leaf() { return false; }
 	virtual int length() { return len; }
 	virtual std::string as_string() { return left->as_string()+right->as_string(); }
-	virtual Node* slice(int begin, int end) {
+	virtual NodePtr slice(int begin, int end) {
 		assert(0 <= begin);
 		assert(begin <= end);
 		assert(end <= length());
-		Node *result;
-		if (begin == 0 && end == length())
+		NodePtr result;
+		if (begin == 0 && end == length()) {
 			result = this;
-		else {
+		} else {
 			int L = left->length();
 			if (end <= L)
 				result = left->slice(begin, end);
@@ -175,9 +190,6 @@ class Iterator {
 public:
 	bool valid;
 
-	Iterator() { // just for fucking debug
-	}
-
 	Iterator(Node *node) {
 		Node *prev = node;
 		while (!node->is_leaf()) {
@@ -189,7 +201,7 @@ public:
 		leaf = (Leaf*)node;
 		position = 0;
 		valid = true;
-		advance(0); // to deal with possible empty leafs
+		advance(0); // to deal with possibly empty leafs
 	}
 
 	const char& current() {

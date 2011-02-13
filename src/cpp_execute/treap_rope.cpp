@@ -1,14 +1,16 @@
 #include "treap_rope.h"
 
-Node* Node::concat_with(Node *other) {
-	Node* result = concat(this, other);
+int node_count=0;
+
+NodePtr Node::concat_with(NodePtr other) {
+	NodePtr result = concat(this, other);
 #ifdef SLOW_ASSERTS
 	assert(result->as_string() == this->as_string()+other->as_string());
 #endif
 	return result;
 }
 
-Node *merge(int new_key, Node* left, Node* right) {
+NodePtr merge(int new_key, NodePtr left, NodePtr right) {
 	if (left->length()+right->length() <= CONCAT_THRESHOLD)
 		return new Leaf(left->as_string()+right->as_string());
 
@@ -31,7 +33,7 @@ Node *merge(int new_key, Node* left, Node* right) {
 	}
 }
 
-Node* concat(Node *left, Node *right) {
+NodePtr concat(NodePtr left, NodePtr right) {
 	if (//left->is_leaf() && right->is_leaf() &&
 		left->length() + right->length() <= CONCAT_THRESHOLD) 
 			return new Leaf(left->as_string()+right->as_string());
@@ -42,7 +44,7 @@ Node* concat(Node *left, Node *right) {
 	//return new InnerNode(std::min(left->heap_key, right->heap_key), left, right); // unbalanced implementation
 }
 
-bool check_node(Node *node) {
+bool check_node(NodePtr node) {
 	std::string s = node->as_string();
 	assert(s.length() == node->length());
 	Iterator iter = Iterator(node);
@@ -53,10 +55,10 @@ bool check_node(Node *node) {
 }
 
 void test() {
-	Node *hello = new Leaf("hello");
-	Node *world = new Leaf("world");
+	NodePtr hello = new Leaf("hello");
+	NodePtr world = new Leaf("world");
 	//check_node(hello);
-	Node *hw = hello->concat_with(world);
+	NodePtr hw = hello->concat_with(world);
 	//hw->debug_print();
 	check_node(hw);
 
@@ -91,7 +93,7 @@ void test() {
 	for (int i = 0; i<100; i++) {
 		int begin = rand()%(hw->length()+1);
 		int end = begin+rand()%(hw->length()-begin+1);
-		Node *slice = hw->slice(begin, end);
+		NodePtr slice = hw->slice(begin, end);
 		assert(check_node(slice));
 		std::cout<<begin<<" "<<end<<std::endl;
 	}

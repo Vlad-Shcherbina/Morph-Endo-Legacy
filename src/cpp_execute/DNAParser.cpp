@@ -2,7 +2,7 @@
 
 #include "DNAParser.h"
 
-DNAParser::DNAParser(dna_type* pdna) : pdna(pdna), index(0), iter(Iterator(pdna))
+DNAParser::DNAParser(dna_type pdna) : pdna(pdna), index(0), iter(Iterator(pdna))
 {
 	dna_len = pdna->length();
 	saved_codon = "";

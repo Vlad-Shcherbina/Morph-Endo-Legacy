@@ -40,7 +40,7 @@ void test_executor(string s)
 }
 
 
-dna_type* endo()
+dna_type endo()
 {
 	ifstream endo;
 	endo.open ("endo.dna", ios::in);
@@ -68,7 +68,7 @@ void stats_run(int n_steps=2000000000)
 	//prefix = "IIPIFFCPICICIICPIICIPPPICIIC";
 	prefix = "";
     
-	dna_type* pdna = (new Leaf(prefix))->concat_with(endo());
+	dna_type pdna = (new Leaf(prefix))->concat_with(endo());
 	
 	Executor e = Executor(pdna);
     e.step();
@@ -80,7 +80,9 @@ void stats_run(int n_steps=2000000000)
 			if ((i > 0) && (i%1000 == 0))
 			{
 				clock_t elapsed = clock() - start;
+				//std::cout<<"rope depth "<<e.pdna->depth()<<std::endl;
 				std::cout <<  i << " " << ((i/(clock()-start+(1e-6)))*CLOCKS_PER_SEC) << " steps/s" << std::endl;
+				std::cout << node_count << " nodes total"<<std::endl;
 			}
 			e.step();
 		}
@@ -106,6 +108,6 @@ int main()
 	//test_executor("IIPIPICPIICICIIFICCIFCCCPPIICCFPC");
 	//test_executor("IIPIPIICPIICIICCIICFCFC");
 	//trace(100);
-	stats_run();
+	stats_run(1000000);
 	//test();
 }
