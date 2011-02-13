@@ -53,11 +53,13 @@ dna_type* endo()
 	return new Leaf(endo_string);
 }
 
-void trace()
+void trace(int steps=10)
 {
 	Executor e = Executor(endo(), true);
-	for(int i = 0; i < 10; i++)
+	for(int i = 0; i < steps; i++) {
 		e.step();
+		//cin>>*new string();
+	}
 }
 
 void stats_run(int n_steps=2000000000)
@@ -103,6 +105,7 @@ int main()
 	//test_executor("IIPIPICPIICICIIFICCIFPPIICCFPC");
 	//test_executor("IIPIPICPIICICIIFICCIFCCCPPIICCFPC");
 	//test_executor("IIPIPIICPIICIICCIICFCFC");
-	//trace();
-	stats_run();
+	trace(100);
+	//stats_run();
+	//test();
 }

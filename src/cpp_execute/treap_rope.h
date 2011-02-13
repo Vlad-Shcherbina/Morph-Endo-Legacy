@@ -20,14 +20,15 @@ Operations:
 
 #pragma once
 
-#define NDEBUG
-
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
 #include <algorithm>
+
+
+//#define SLOW_ASSERTS
 
 const int MAX_HEAP_KEY = 1000000000;
 const int CONCAT_THRESHOLD = 32;
@@ -44,10 +45,18 @@ struct Node {
 	virtual void debug_print(int indent = 0) = 0;
 	virtual int depth() = 0;
 	Node* concat_with(Node *other);
+	virtual ~Node() {
+		std::cout<<"never delete me, I'm shared"<<std::endl;
+		assert(false); // never delete me, I'm shared
+	}
 };
 
 Node* concat(Node *left, Node *right);
 Node *merge(int new_key, Node* left, Node* right);
+
+bool check_node(Node *node);
+void test();
+
 
 struct Leaf : Node {
 	char *s; // no null at the end
@@ -83,7 +92,11 @@ struct Leaf : Node {
 	virtual void debug_print(int indent = 0) {
 		for (int i = 0; i<indent; i++)
 			std::cout<<' ';
-		std::cout<<"Leaf("<<as_string()<<")"<<std::endl;
+		//std::string s = as_string();
+		//if (s.length()>10)
+		//	s = s.substr(0, 10)+"...";
+		int len = std::min(10, length());
+		std::cout<<"Leaf("<<std::string(s+begin, s+begin+len)<<", "<<length()<<")"<<std::endl;
 	}
 	virtual int depth() {
 		return 0;
@@ -102,6 +115,10 @@ struct InnerNode : Node {
 		this->heap_key = heap_key;
 		assert(heap_key <= left->heap_key);
 		assert(heap_key <= right->heap_key);
+#ifdef SLOW_ASSERTS
+		assert(check_node(left));
+		assert(check_node(right));
+#endif
 	}
 
 	virtual bool is_leaf() { return false; }
@@ -123,7 +140,9 @@ struct InnerNode : Node {
 			else
 				result = concat(left->slice(begin, L), right->slice(0, end-L));
 		}
-		assert(result->as_string() == as_string().substr(begin, end-begin)); // ridiculously slow
+#ifdef SLOW_ASSERTS
+		assert(result->as_string() == as_string().substr(begin, end-begin));
+#endif
 		return result;
 	}
 	virtual void debug_print(int indent = 0) {
@@ -147,10 +166,15 @@ class Iterator {
 public:
 	bool valid;
 
+	Iterator() { // just for fucking debug
+	}
+
 	Iterator(Node *node) {
+		Node *prev = node;
 		while (!node->is_leaf()) {
 			path.push_back((InnerNode*)node);
 			dirs.push_back(false);
+			prev = node;
 			node = ((InnerNode*)node)->left;
 		}
 		leaf = (Leaf*)node;
@@ -209,7 +233,3 @@ public:
 		}
 	}
 };
-
-
-bool check_node(Node *node);
-void test();

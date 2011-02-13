@@ -128,17 +128,16 @@ void Executor::step()
 	}
 
 	matchreplace(p, t);
-	if (iteration == 44)
-	{
-		std::cout << 0;
-	}
+
 	parser = DNAParser(pdna);
+
 	iteration += 1;
 	delete p;
 	delete t;
 
-	if (debug)
+	if (debug) {
 		std::cout << "len(rna) = " << rna.size() << std::endl << std::endl;
+	}
 }
 
 t_pattern* Executor::pattern()
@@ -363,7 +362,6 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 	//pdna->insert(0, *r);
 	pdna = pdna->slice(i, pdna->length());
 	pdna = r->concat_with(pdna);
-	delete r;
 }
 
 dna_type*  Executor::replacement(t_template* templ, t_environment* e)

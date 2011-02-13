@@ -2,11 +2,16 @@
 
 Node* Node::concat_with(Node *other) {
 	Node* result = concat(this, other);
-	assert(result->as_string() == this->as_string()+other->as_string()); // ridiculously slow
+#ifdef SLOW_ASSERTS
+	assert(result->as_string() == this->as_string()+other->as_string());
+#endif
 	return result;
 }
 
 Node *merge(int new_key, Node* left, Node* right) {
+	if (left->length()+right->length() <= CONCAT_THRESHOLD)
+		return new Leaf(left->as_string()+right->as_string());
+
 	if (new_key <= left->heap_key && new_key <= right->heap_key)
 		return new InnerNode(new_key, left, right);
 	if (left->heap_key < right->heap_key)
@@ -22,7 +27,7 @@ Node *merge(int new_key, Node* left, Node* right) {
 }
 
 Node* concat(Node *left, Node *right) {
-	if (left->is_leaf() && right->is_leaf() &&
+	if (//left->is_leaf() && right->is_leaf() &&
 		left->length() + right->length() <= CONCAT_THRESHOLD) 
 			return new Leaf(left->as_string()+right->as_string());
 
@@ -59,6 +64,7 @@ void test() {
 		assert(check_node(hw));
 	}
 	assert(check_node(hw));
+	hw->debug_print();
 
 	//random access
 	for (int i = 0; i<100; i++) {
