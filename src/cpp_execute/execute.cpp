@@ -77,7 +77,7 @@ void stats_run(int n_steps=2000000000)
 	{
 		for (int i = 0; i < n_steps; i++)
 		{
-			if ((i > 0) && (i%10 == 0))
+			if ((i > 0) && (i%1000 == 0))
 			{
 				clock_t elapsed = clock() - start;
 				std::cout <<  i << " " << ((i/(clock()-start+(1e-6)))*CLOCKS_PER_SEC) << " steps/s" << std::endl;
@@ -105,7 +105,7 @@ int main()
 	//test_executor("IIPIPICPIICICIIFICCIFPPIICCFPC");
 	//test_executor("IIPIPICPIICICIIFICCIFCCCPPIICCFPC");
 	//test_executor("IIPIPIICPIICIICCIICFCFC");
-	trace(100);
-	//stats_run();
+	//trace(100);
+	stats_run();
 	//test();
 }
