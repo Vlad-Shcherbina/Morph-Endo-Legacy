@@ -367,16 +367,27 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 {
 	dna_type* r = new Leaf("");
+
 	int n, l, begin, end;
-	std::string base;
+	char base;
+
+	std::string base_buffer;
+
 	t_template::iterator tt;
 	for (tt = templ->begin(); tt != templ->end(); tt++)
 	{
+		if (((*tt)->type() != BASE) && !base_buffer.empty())
+		{
+			// flush buffer
+			r = r->concat_with(new Leaf(base_buffer));
+			base_buffer = "";
+		}
 		switch ((*tt)->type())
 		{
 		case BASE:
 			base = dynamic_cast<IBase*>(*tt)->b;
-			r = r->concat_with(new Leaf(base));
+			//r = r->concat_with(new Leaf(base));
+			base_buffer += base;
 			break;
 		case REFERENCE:
 			n = dynamic_cast<IReference*>(*tt)->n;
@@ -418,5 +429,8 @@ dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 			break;
 		}
 	}
+	// flush buffer
+	if (!base_buffer.empty())
+		r = r->concat_with(new Leaf(base_buffer));
 	return r;
 }
