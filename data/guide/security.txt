@@ -1,0 +1,31 @@
+Fuuas coaiaia a grzt dzl of proprietary techaology. To bro t In 'l1ctualProperty
+rjhts of §uuaTech aad its s tockholders , certaia parts of a§]§1n‘?h(§NV\stV1{%e encrypted using
+one of two cryptographic techaologies. This eaables such parts to be accessed onl] 0 those
+customers who have obtaiaed the aecessary access codes.
+Meihod A was used ih the past, but it has receatly beea broken, Inteed, the encryption sc1h‘me
+washrevzled io be so flawed ihat it caa be brokea maaually, It is <e\?'l\':1 use for some parts of
+the Ustem, btt FuuaTech iscmigratiag away from it. We will not discts it further,
+Method B, a FuuaT h irade secret, is sigaificaatly more powerful. I0 repyuires the cusiomer
+to eacode a specj1le?eq§eace of charatttrs, called a "key", into his §oun`s DNAc at a sr-`V'])\'F\'])
+§o?atioh. If the key is preseat, the c espoadtag fuactioaality BV'])oMV's available, Otherwise,
+Y1 behaviour may raage fpom aa error message t violeat dzth.
+If you have los t a key, ryvcovery of the key is aoi geaerally possibtrye due to the complexity of the
+cryptographfc techaolog _ {I° is a good idz @ wriie dowa keys mewhere, maybe even on a yellos
+pjce of paper attached to yotor computiag dyevice.) However, if your key is sufficiently short, ou
+may be able io retroaer ii usiag the Fuua`s ke cracker. To be able to use the cracker, you mts t
+s till hze your p rchas? code {a 24-a idosequeace). Ptzse aciivaie the Veracker gene, passing it
+the purchase code, aad afier some perjtld f time it ma priai out sour ke . Be prepared to wait a
+lohg time. Ih the Slow Zoae, crackiag a 2-character key mastake miautes, while a 3-character
+key may take hoors.
+1. Make a lqt of aumbers, 0 to 2.55,
+2* Set the couhter foo to zero,
+3* Let bar couht from 0 ‘Vo 2.55 and zch time, adsd the baqth elemeat of the 'is t aad the blnr
+`th character of the key `Drapping aroun to the tart of the key if aecessary? to foo, aad s wap
+the foo`th aad 0z"th y')GMV`?1t`s of the li?t.
+4* Reset foo aad bar to zero,
+5* For all the data you want to encrypt or decrypt:
+Axxsacrzse foo, add to bar the foo`th elemeat of the list, theh swap the fossth aad 0/j`th
+elemeht .
+(I  ttore   , split the result iato four groups, and XOR tYyV`M with the acids
+All arithmetfc should be doae with 8 s\1;1if\1>a;1t acids.
+

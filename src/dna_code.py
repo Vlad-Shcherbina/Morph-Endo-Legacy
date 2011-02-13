@@ -37,16 +37,15 @@ def asnat(n):
     return ''.join(r)
 
 def show_pattern_and_template(dna):
-    #it's buggy and shit
     from Executor import Executor
-    from items import TerminationItem
+
     e = Executor(dna)
     e.explicit_rna_items = True
     
     pattern = e.pattern()
-    pattern.append(TerminationItem())
+    pattern.append('EoP')
     template = e.template()
-    template.append(TerminationItem())
+    template.append('EoT')
     e.item_starts.append(e.parser.index)
     
     s1 = []
@@ -71,6 +70,16 @@ def show_pattern_and_template(dna):
     
 if __name__ == '__main__':
         
+    print 'precheck:'
+    prefix = open('../data/precheck.dna').read()
+    show_pattern_and_template(prefix+endo())
+    print
+    print 'navigation:'
     prefix = open('../data/guide/navigation.dna').read()
     show_pattern_and_template(prefix+endo())
+    print
+    print 'catalog:'
+    prefix = open('../data/guide/catalog.dna').read()
+    show_pattern_and_template(prefix+endo())
+    
     pass
