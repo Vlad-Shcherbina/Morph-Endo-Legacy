@@ -2,7 +2,7 @@
 
 #include "DNAParser.h"
 
-DNAParser::DNAParser(dna_type* pdna) : pdna(pdna), index(0)
+DNAParser::DNAParser(dna_type* pdna) : pdna(pdna), index(0), iter(Iterator(pdna))
 {
 	dna_len = pdna->length();
 	saved_codon = "";
@@ -11,9 +11,12 @@ DNAParser::DNAParser(dna_type* pdna) : pdna(pdna), index(0)
 t_base DNAParser::read_base()
 {
 	assert(saved_codon == "");
-	if (index == dna_len)
+	if (!iter.valid)
 		return 0;
-	return (*pdna)[index++];
+	t_base result = iter.current();
+	iter.advance();
+	index++;
+	return result;
 }
 
 t_codon DNAParser::read_codon()
@@ -32,13 +35,13 @@ t_codon DNAParser::read_codon()
 	int codon_len = 0;
 	while (codon_len < max_len)
 	{
-		t_base base = (*pdna)[index + codon_len];
+		t_base base = iter.current();
+		iter.advance();
 		codon_len += 1;
 		codon += base;
 		if (base != 'I')
 			break;
 	}
-
 	index += codon_len;
 	return codon;
 }

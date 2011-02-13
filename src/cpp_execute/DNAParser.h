@@ -1,17 +1,18 @@
 #ifndef DNAPARSER_H
 #define DNAPARSER_H
+#include "treap_rope.h"
 
 #include <string>
 
-typedef std::string dna_type;
+typedef Node dna_type;
+typedef Iterator dna_iter;
 typedef char t_base;
 typedef std::string t_codon;
 
-//int len(dna_type* dna) { return dna->length(); }
-
 class DNAParser {
 	dna_type* pdna;
-	int dna_len;
+	dna_iter iter;
+	int dna_len;		// TODO GET RID OF THIS
 	int index;
 	t_codon saved_codon;
 
@@ -20,7 +21,11 @@ class DNAParser {
 	t_base read_base();
 	t_codon read_codon();
 	void unread_codon(t_codon codon);
-	inline int getIndex() { return index; }
+	inline int getIndex()
+	{
+		assert(saved_codon == "");	// otherwise index is wrong. probably.
+		return index;
+	}
 };
 
 #endif /* DNAPARSER_H */

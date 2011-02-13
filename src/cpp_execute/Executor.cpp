@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Executor.h"
+#include "kmp.h"
 
 
 std::string limit_string(std::string &s, int maxlen=10)
@@ -13,6 +14,19 @@ std::string limit_string(std::string &s, int maxlen=10)
 		ss << s.substr(0, maxlen) << "...";
 	}
 	ss << " (" << s.size() << " bases)";
+	return ss.str();
+}
+
+std::string limit_string(dna_type* pdna, int maxlen=10)
+{
+	std::stringstream ss;
+	if (pdna->length() <= maxlen)
+		ss << pdna->as_string();
+	else
+	{
+		ss << pdna->slice(0, maxlen)->as_string() << "...";
+	}
+	ss << " (" << pdna->length() << " bases)";
 	return ss.str();
 }
 
@@ -31,7 +45,7 @@ std::string quote(std::string &s)
 	return result;
 }
 
-dna_type protect(dna_type* pdna, int begin, int end, int level)
+dna_type* protect(dna_type* pdna, int level)
 {
 	assert(level>=0);
 	std::string i="I", c="C", f="F", p="P";
@@ -40,28 +54,32 @@ dna_type protect(dna_type* pdna, int begin, int end, int level)
 		i = c; c = f; f = p; p = quote(p);
 	}
 	
-	dna_type result;
-	for (int j = begin; j < end; j++)
-		switch ((*pdna)[j])
+	std::string result;
+	dna_iter iter = Iterator(pdna);
+	while (iter.valid)
+	{
+		switch (iter.current())
 		{
 		case 'I': result += i; break;
 		case 'C': result += c; break;
 		case 'F': result += f; break;
 		case 'P': result += p;
 		}
-	return result;
+		iter.advance();
+	}
+	return new Leaf(result);
 }
 
-dna_type asnat(int n)
+dna_type* asnat(int n)
 {
-	dna_type result;
+	std::string result;
 	while (n > 0)
 	{
 		result += (n % 2) ? 'C' : 'I';
 		n /= 2;
 	}
 	result += 'P';
-	return result;
+	return new Leaf(result);
 }
 
 Executor::Executor(dna_type* pdna, bool debug) : parser(DNAParser(pdna)), pdna(pdna), debug(debug)
@@ -76,7 +94,7 @@ void Executor::step()
 	if (debug)
 	{
 		std::cout << "iteration " << iteration << std::endl;
-        std::cout << "dna = " << limit_string(*pdna) << std::endl;
+        std::cout << "dna = " << limit_string(pdna) << std::endl;
 	}
 
 	t_pattern* p = 0;
@@ -99,8 +117,9 @@ void Executor::step()
 	// finally
 	int index = parser.getIndex();
 	cost += index;
-	//std::cout << "old dna " << (*pdna) << std::endl; // DEBUG
-	pdna->erase(0, index);
+	
+	//pdna->erase(0, index);
+	pdna = pdna->slice(index, pdna->length());
 	if (execution_finished)
 	{
 		if (p) delete p;
@@ -109,7 +128,10 @@ void Executor::step()
 	}
 
 	matchreplace(p, t);
-	//std::cout << "new dna " << *pdna << std::endl; // DEBUG
+	if (iteration == 44)
+	{
+		std::cout << 0;
+	}
 	parser = DNAParser(pdna);
 	iteration += 1;
 	delete p;
@@ -254,9 +276,10 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 {
 	t_environment e;
 	int i = 0;
+	dna_iter iter = Iterator(pdna);
 	std::vector<int> c;
 
-	int j;
+	int j, n;
 	std::string s;
 	t_pattern::iterator pp;
 	for (pp = p->begin(); pp != p->end(); pp++)
@@ -265,8 +288,11 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 		{
 		case BASE:
 			cost += 1;
-			if ((*pdna)[i] == dynamic_cast<IBase*>(*pp)->b)
+			if (iter.current() == dynamic_cast<IBase*>(*pp)->b)
+			{
 				i++;
+				iter.advance();
+			}
 			else
 			{
 				if (debug)
@@ -276,26 +302,31 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 			}
 			break;
 		case SKIP:
-			i += dynamic_cast<ISkip*>(*pp)->n;
-			if (i > pdna->size())
+			n = dynamic_cast<ISkip*>(*pp)->n;
+			i += n;
+			if (i > pdna->length())
 			{
 				if (debug)
 					//std::cout << "failed match (skip)" << std::endl;
 					std::cout << "failed match" << std::endl;
 				return;
 			}
+			else
+				iter.advance(n);
 			break;
 		case SEARCH:
 			s = dynamic_cast<ISearch*>(*pp)->s;
-			j = pdna->find(s, i);
-			if (j != pdna->npos)
+			j = kmp_search(pdna, s, i);
+			if (j != pdna->length())
 			{
-				cost += j + s.size() - i;
-				i = j + s.size();
+				int delta = j + s.size() - i;
+				cost += delta;
+				i += delta;
+				iter.advance(delta);
 			}
 			else
 			{
-				cost += pdna->size() - i;
+				cost += pdna->length() - i;
 				if (debug)
 					//std::cout << "failed match (search)" << std::endl;
 					std::cout << "failed match" << std::endl;
@@ -322,28 +353,32 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 			int begin, end;
 			begin = ee->start;
 			end = ee->end;
-			std::string fragment = pdna->substr(begin, end-begin);
+			dna_type* fragment = pdna->slice(begin, end);
 			std::cout << "e[" << j << "] = " << limit_string(fragment) << std::endl;
 			j++;
 		}
 	}
 	dna_type* r = replacement(t, &e);
-	pdna->erase(0, i);
-	pdna->insert(0, *r);
+	//pdna->erase(0, i);
+	//pdna->insert(0, *r);
+	pdna = pdna->slice(i, pdna->length());
+	pdna = r->concat_with(pdna);
 	delete r;
 }
 
 dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 {
-	dna_type* r = new dna_type;
+	dna_type* r = new Leaf("");
 	int n, l, begin, end;
+	std::string base;
 	t_template::iterator tt;
 	for (tt = templ->begin(); tt != templ->end(); tt++)
 	{
 		switch ((*tt)->type())
 		{
 		case BASE:
-			r->push_back(dynamic_cast<IBase*>(*tt)->b);
+			base = dynamic_cast<IBase*>(*tt)->b;
+			r = r->concat_with(new Leaf(base));
 			break;
 		case REFERENCE:
 			n = dynamic_cast<IReference*>(*tt)->n;
@@ -359,12 +394,14 @@ dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 				end = 0;
 			}
 			if (l == 0)
-				r->append(*pdna, begin, end - begin);
+			{
+				r = r->concat_with(pdna->slice(begin, end));
+			}
 			else
 			{
-				dna_type p = protect(pdna, begin, end, l);
-				cost += p.size();
-				r->append(p);
+				dna_type* p = protect(pdna->slice(begin, end), l);
+				cost += p->length();
+				r = r->concat_with(p);
 			}
 			break;
 		case LENGTH:
@@ -379,8 +416,7 @@ dna_type*  Executor::replacement(t_template* templ, t_environment* e)
 				begin = 0;
 				end = 0;
 			}
-			dna_type p = asnat(end - begin);
-			r->append(p);
+			r = r->concat_with(asnat(end - begin));
 			break;
 		}
 	}

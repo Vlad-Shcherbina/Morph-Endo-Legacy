@@ -57,5 +57,6 @@ class Executor
 	public:
 	Executor(dna_type* pdna, bool debug=false);
 	void dump_rna();
+	void dump_dna() { std::cout << pdna->as_string() << std::endl; }
 	void step();
 };

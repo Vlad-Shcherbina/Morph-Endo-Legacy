@@ -20,6 +20,8 @@ Operations:
 
 #pragma once
 
+#define NDEBUG
+
 #include <string>
 #include <vector>
 #include <cstdlib>

@@ -4,10 +4,11 @@
 
 #include "DNAParser.h"
 #include "Executor.h"
+//#include "treap_rope.h"
 
 using namespace std;
 
-void test_parser(string s)
+/*void test_parser(string s)
 {
 	cout << s << endl;
 	DNAParser p = DNAParser(&s);
@@ -26,53 +27,59 @@ void test_parser(string s)
 		c = p.read_codon();
 	}
 	cout << endl;
-}
+}*/
 
 void test_executor(string s)
 {
 	try {
-	Executor e = Executor(&s);
-	e.step();
+		Executor e = Executor(new Leaf(s));
+		e.step();
+		e.dump_dna();
 	}
 	catch (FinishException) {}
 }
 
-void trace()
+
+dna_type* endo()
 {
 	ifstream endo;
 	endo.open ("endo.dna", ios::in);
-	string dna;
-	endo >> dna;
+    
+	std::string endo_string;
+
+	endo >> endo_string;
 	endo.close();
-	Executor e = Executor(&dna, true);
+	
+	return new Leaf(endo_string);
+}
+
+void trace()
+{
+	Executor e = Executor(endo(), true);
 	for(int i = 0; i < 10; i++)
 		e.step();
 }
 
 void stats_run(int n_steps=2000000000)
 {
-	ifstream endo;
-	endo.open ("endo.dna", ios::in);
-    
-	dna_type prefix, dna;
-
-	endo >> dna;
-	endo.close();
-
+	std::string prefix;
 	//prefix = "IIPIFFCPICICIICPIICIPPPICIIC";
 	prefix = "";
     
-	dna_type complete_dna = prefix + dna;
-
-	Executor e = Executor(&complete_dna);
-    
+	dna_type* pdna = (new Leaf(prefix))->concat_with(endo());
+	
+	Executor e = Executor(pdna);
+    e.step();
 	clock_t start = clock();
 	try
 	{
 		for (int i = 0; i < n_steps; i++)
 		{
 			if ((i > 0) && (i%10 == 0))
-				std::cout <<  i << " " << int((i/(clock()-start+1e-6))*CLOCKS_PER_SEC) << "steps/s" << std::endl;
+			{
+				clock_t elapsed = clock() - start;
+				std::cout <<  i << " " << ((i/(clock()-start+(1e-6)))*CLOCKS_PER_SEC) << " steps/s" << std::endl;
+			}
 			e.step();
 		}
 	}
