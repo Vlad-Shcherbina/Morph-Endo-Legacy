@@ -30,7 +30,7 @@ Operations:
 
 //#define SLOW_ASSERTS
 
-const int MAX_HEAP_KEY = 1000000000;
+const int MAX_HEAP_KEY = 2000000000;
 const int CONCAT_THRESHOLD = 32;
 
 struct Iterator;
@@ -45,10 +45,12 @@ struct Node {
 	virtual void debug_print(int indent = 0) = 0;
 	virtual int depth() = 0;
 	Node* concat_with(Node *other);
+	virtual void accumulate_string(std::string &s) = 0;
 	virtual ~Node() {
 		std::cout<<"never delete me, I'm shared"<<std::endl;
 		assert(false); // never delete me, I'm shared
 	}
+
 };
 
 Node* concat(Node *left, Node *right);
@@ -100,6 +102,9 @@ struct Leaf : Node {
 	}
 	virtual int depth() {
 		return 0;
+	}
+	virtual void accumulate_string(std::string &s) {
+		s.append(this->s+begin, this->s+end);
 	}
 };
 
@@ -154,6 +159,10 @@ struct InnerNode : Node {
 	}
 	virtual int depth() {
 		return 1+std::max(left->depth(), right->depth());
+	}
+	virtual void accumulate_string(std::string &s) {
+		left->accumulate_string(s);
+		right->accumulate_string(s);
 	}
 };
 

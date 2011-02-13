@@ -3,6 +3,7 @@
 #include "Executor.h"
 #include "kmp.h"
 
+const int DEFRAGMENTATION_FREQUENCY = 10000000;
 
 std::string limit_string(std::string &s, int maxlen=10)
 {
@@ -128,6 +129,13 @@ void Executor::step()
 	}
 
 	matchreplace(p, t);
+
+	if ((iteration+1)%DEFRAGMENTATION_FREQUENCY == 0) {
+		std::string dna;
+		pdna->accumulate_string(dna);
+		pdna = new Leaf(dna);
+	}
+
 
 	parser = DNAParser(pdna);
 
