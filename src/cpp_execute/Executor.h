@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <ostream>
 
 #include "DNAParser.h"
 #include "Item.h"
@@ -57,7 +58,10 @@ public:
 
 	public:
 	Executor(dna_type pdna, bool debug=false);
-	void dump_rna();
+	void dump_rna(std::ostream &o) {
+		for (t_rna::iterator ii = rna.begin(); ii != rna.end(); ii++)
+			o << *ii << std::endl;
+	};
 	void dump_dna() { std::cout << pdna->as_string() << std::endl; }
 	void step();
 };

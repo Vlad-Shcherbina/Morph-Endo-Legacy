@@ -295,7 +295,7 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 		{
 		case BASE:
 			cost += 1;
-			if (iter.current() == dynamic_cast<IBase*>(*pp)->b)
+			if (iter.current() == static_cast<IBase*>(*pp)->b)
 			{
 				i++;
 				iter.advance();
@@ -309,7 +309,7 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 			}
 			break;
 		case SKIP:
-			n = dynamic_cast<ISkip*>(*pp)->n;
+			n = static_cast<ISkip*>(*pp)->n;
 			i += n;
 			if (i > pdna->length())
 			{
@@ -322,7 +322,7 @@ void  Executor::matchreplace(t_pattern* p, t_template* t)
 				iter.advance(n);
 			break;
 		case SEARCH:
-			s = dynamic_cast<ISearch*>(*pp)->s;
+			s = static_cast<ISearch*>(*pp)->s;
 			j = kmp_search(pdna, s, i);
 			if (j != pdna->length())
 			{
@@ -393,13 +393,13 @@ dna_type  Executor::replacement(t_template* templ, t_environment* e)
 		switch ((*tt)->type())
 		{
 		case BASE:
-			base = dynamic_cast<IBase*>(*tt)->b;
+			base = static_cast<IBase*>(*tt)->b;
 			//r = r->concat_with(new Leaf(base));
 			base_buffer += base;
 			break;
 		case REFERENCE:
-			n = dynamic_cast<IReference*>(*tt)->n;
-			l = dynamic_cast<IReference*>(*tt)->l;
+			n = static_cast<IReference*>(*tt)->n;
+			l = static_cast<IReference*>(*tt)->l;
 			if (n < e->size())
 			{
 				begin = (*e)[n].start;
@@ -422,7 +422,7 @@ dna_type  Executor::replacement(t_template* templ, t_environment* e)
 			}
 			break;
 		case LENGTH:
-			n = dynamic_cast<ILength*>(*tt)->n;
+			n = static_cast<ILength*>(*tt)->n;
 			if (n < e->size())
 			{
 				begin = (*e)[n].start;
