@@ -1,11 +1,13 @@
 #include <assert.h>
 
 #include "DNAParser.h"
+#include "kmp.h"
 
 DNAParser::DNAParser(dna_type pdna) : pdna(pdna), index(0), iter(Iterator(pdna))
 {
 	dna_len = pdna->length();
 	saved_codon = "";
+	green_zone_offset = -1;
 }
 
 t_base DNAParser::read_base()
@@ -99,4 +101,14 @@ std::string DNAParser::consts()
 		}
 	}
 	return result;
+}
+
+int DNAParser::green_offset()
+{
+	if (green_zone_offset < 0)
+	{
+		green_zone_offset = kmp_search(pdna, const_cast<std::string&>(green_zone_marker), 0);
+		assert(green_zone_begin >= 0);
+	}
+	return green_zone_offset;
 }

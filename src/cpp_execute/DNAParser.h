@@ -9,12 +9,16 @@ typedef Iterator dna_iter;
 typedef char t_base;
 typedef std::string t_codon;
 
+const std::string green_zone_marker = "IFPICFPPCFFPP";
+
 class DNAParser {
 	dna_type pdna;
 	dna_iter iter;
 	int dna_len;
 	int index;
 	t_codon saved_codon;
+
+	int green_zone_offset;
 
 	public:
 	DNAParser(dna_type pdna);
@@ -28,6 +32,7 @@ class DNAParser {
 	void jump(int index);
 	int nat();
 	std::string consts();
+	int green_offset();
 };
 
 #endif /* DNAPARSER_H */

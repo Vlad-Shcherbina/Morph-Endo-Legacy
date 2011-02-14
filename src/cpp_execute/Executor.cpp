@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "Executor.h"
 #include "kmp.h"
@@ -411,4 +412,29 @@ dna_type  Executor::replacement(t_template* templ, t_environment* e)
 	if (!base_buffer.empty())
 		r = r->concat_with(new Leaf(base_buffer));
 	return r;
+}
+
+void Executor::dump_registers()
+{
+	DNAParser register_parser(pdna);
+
+	std::stringstream ss;
+	int offset = register_parser.green_offset();
+
+	register_parser.jump(offset + 0x510);
+	ss << "AAA_geneTablePageNr = " << register_parser.nat() << ", ";
+	register_parser.jump(offset + 0x4628);
+	ss << "__int12 = " << register_parser.nat() << ", ";
+	register_parser.jump(offset + 0x4634);
+	ss << "__int12_2 = " << register_parser.nat() << ", " << std::endl;
+	register_parser.jump(offset + 0x45eb);
+	ss << "__int24 = " << register_parser.nat() << ", ";
+	register_parser.jump(offset + 0x4603);
+	ss << "__int24_2 = " << register_parser.nat() << ", ";
+	register_parser.jump(offset + 0x4625);
+	ss << "__int3 = " << register_parser.nat() << ", ";
+	register_parser.jump(offset + 0x461c);
+	ss << "__int9 = " << register_parser.nat() << std::endl;
+
+	std::cout << ss.str();
 }

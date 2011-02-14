@@ -62,4 +62,5 @@ public:
 	};
 	void dump_dna() { std::cout << pdna->as_string() << std::endl; }
 	void step();
+	void dump_registers();
 };
