@@ -4,11 +4,11 @@ import os
 import re
 from collections import namedtuple
 
-from helpers import project_dir
+from helpers import project_path
 from dna_basics import *
 
 
-endo_file_name = os.path.join(project_dir, 'data/endo.dna')
+endo_file_name = project_path('data/endo.dna')
 _endo = None
 def endo():
     global _endo
@@ -98,8 +98,40 @@ def put_to_blue_prefix(data):
     
     
 Gene = namedtuple('Gene', 'offset size')
+class Gene(Gene):
+    def content(self):
+        green_start = endo().find(green_zone_marker)
+        return endo()[green_start+self.offset:green_start+self.offset+self.size]
+    
+    def patch_prefix(self, new_content):
+        assert len(new_content) == self.size
+        pattern = [
+            open_paren,
+            Search(green_zone_marker),
+            Skip(self.offset-len(green_zone_marker)),
+            close_paren,
+            Skip(self.size),
+            ]
+        template = \
+            [Reference(0, 0)]+\
+            map(Base, new_content)
+            
+        items = pattern+[close_paren]+template+[close_paren]
+        return ''.join(i.to_dna() for i in items)        
+
 
 apple = Gene(0x65F785, 0x0003FB)
+mlephant = Gene(0x5B427d, 0x002811)
+do_self_check = Gene(0x000058, 1)
+gene_table_page_nr = Gene(0x00510, 0x00018)
+
+
+def create_and_run_prefix(prefix, path):
+    file_name = project_path(path)
+    with open(file_name+'.dna', 'w') as fout:
+        fout.write(prefix)
+    
+    os.system(project_path('scripts\\exec_build.bat')+' '+file_name)
 
     
 if __name__ == '__main__':
@@ -109,13 +141,15 @@ if __name__ == '__main__':
     #show_pattern_and_template(prefix+endo())
 
     #prefix = adapter()+asnat(123)+asnat(456)
-    prefix = open(os.path.join(project_dir, 'data/sun.dna')).read()
+    prefix = open(project_path('data/sun.dna')).read()
     show_pattern_and_template(prefix+endo())
 
     #print put_to_blue_prefix('ICICIIIIIIIIIIP')
     print put_to_blue_prefix('F')
     p = ''
-    p += put_to_blue_prefix(asnat(250, length=24)*3)
+    #p += put_to_blue_prefix(asnat(250, length=24)*3)
     p += gene_activation_prefix(apple)
     print p.replace(' ', '')
+    
+    print do_self_check.content()
             

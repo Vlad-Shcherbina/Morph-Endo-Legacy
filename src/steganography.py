@@ -2,7 +2,7 @@
 Usage:
     steganography.py <image>
     
-It produces image_incovered file.
+It produces image_uncovered file.
 '''
 
 import sys

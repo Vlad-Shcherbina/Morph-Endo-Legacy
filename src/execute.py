@@ -4,6 +4,7 @@ import sys
 import argparse
 import cProfile
 
+
 try:
     import psyco
     psyco.full()
@@ -48,24 +49,42 @@ def stats_run(n_steps=0):
             
             
 def main():
-    prefix_file, = sys.argv[1:]
+    parser = argparse.ArgumentParser(description='Produce RNA from DNA')
+    parser.add_argument('--trace', action='store_true')
+    parser.add_argument('--pause', action='store_true')
+    parser.add_argument('prefix_filename')
     
-    prefix = open(prefix_file+'.dna').read().strip()
+    args = parser.parse_args()
+    prefix_filename = args.prefix_filename
     
-    rna = open(prefix_file+'.rna', 'w')
+    prefix = open(prefix_filename+'.dna').read().strip()
     
+    assert all(c in 'ICFP' for c in prefix)
+        
     e = Executor(prefix+endo())
-    #e.debug = True
+    e.debug = args.trace or args.pause
     
     start = clock()
     
-    for r in e.obtain_rna():
-        print>>rna, r
+    #for r in e.obtain_rna():
+    #    print>>rna, r
+    try:
+        while True:
+            e.step()
+            if args.pause:
+                print 'press enter',
+                raw_input()
+    except FinishException:
+        pass
+
+    rna_file = open(prefix_filename+'.rna', 'w')
+    for r in e.rna:
+        print>>rna_file, r
     
     print 'it took', clock()-start
     print int(e.iteration/(clock()-start+1e-6)), 'iterations/s'
     
-    rna.close()
+    rna_file.close()
 
     
 if __name__ == '__main__':
