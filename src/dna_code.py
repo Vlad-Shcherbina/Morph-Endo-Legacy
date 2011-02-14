@@ -1,16 +1,10 @@
-# stuff related to contents of DNA
+# higher level stuff related to contents of DNA
 
 import os
 import re
 
 from helpers import project_dir
-from executor.items import *
-
-__all__ = [
-    'endo',
-    'protect',
-    'asnat',
-    ]
+from dna_basics import *
 
 
 endo_file_name = os.path.join(project_dir, 'data/endo.dna')
@@ -21,53 +15,7 @@ def endo():
         _endo = open(endo_file_name).read()
     return _endo
 
-
-def protect(dna, level):
-    assert level >= 0
-    m = {'I': 'C', 'C': 'F', 'F': 'P', 'P': 'IC'}
-    a = ['I']
-    for i in range(level+3):
-        a.append(''.join(map(m.get, a[-1])))
-        
-    m = dict(zip('ICFP', a[-4:]))
-    return ''.join(map(m.get, dna))
- 
-            
-def asnat(n):
-    r = []
-    while n > 0:
-        r.append('IC'[n%2])
-        n //= 2
-    r.append('P')
-    return ''.join(r)
-
-def consts(dna):
-    for base in dna:
-        if base == 'I':
-            try:
-                nextbase = dna.next()
-            except StopIteration:
-                return
-            if nextbase == 'C':
-                yield 'P'
-            else:
-                return
-        else:
-            yield {'C':'I', 'F':'C', 'P':'F'}[base]
-
-def nat(dna):
-    result = 0
-    power = 1
-    for base in dna:
-        if base == 'P':
-            yield result
-            result = 0
-            power = 1
-            continue
-        elif base == 'C':
-            result += power
-        power *= 2
-        
+     
 
 def show_pattern_and_template(dna):
     from executor import Executor

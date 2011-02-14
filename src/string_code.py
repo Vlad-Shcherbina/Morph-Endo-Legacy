@@ -1,4 +1,4 @@
-import dna_code
+from dna_basics import consts, nat, protect
 
 # codepage, both ways
 code = \
@@ -38,8 +38,8 @@ def extract_from_offset(dna, offset, level=1):
     result = ""
     gen = (dna[i] for i in xrange(offset, len(dna)))
     for l in xrange(level):
-        gen = dna_code.consts(gen)
-    gen = dna_code.nat(gen)
+        gen = consts(gen)
+    gen = nat(gen)
     for c in gen:
         if c == 255:
             result += "<EoL>"
@@ -52,7 +52,7 @@ def extract_from_offset(dna, offset, level=1):
 
 def search(dna, substring, level=1):
     substring_dna = ''.join(asnat_fixed_length(code[c]) for c in substring)
-    substring_dna = dna_code.protect(substring_dna, level) # inefficient
+    substring_dna = protect(substring_dna, level) # inefficient
     return dna.find(substring_dna)
 
 def extract_from_prefix(dna, substring, level=1):
