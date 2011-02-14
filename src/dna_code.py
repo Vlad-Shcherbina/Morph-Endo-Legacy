@@ -2,6 +2,7 @@
 
 import os
 import re
+from collections import namedtuple
 
 from helpers import project_dir
 from dna_basics import *
@@ -49,13 +50,20 @@ def show_pattern_and_template(dna):
     print ' '.join(s2)
     
     
+    
+# blue zone starts after it
+blue_zone_marker = 'IFPICFPPCFIPP'
+
+green_zone_marker = 'IFPICFPPCFFPP'
+    
+    
 adapter_signature = 'IFPICFPPCCC'
 def adapter():
     m1, m2 = re.finditer(adapter_signature, endo())
     adapter = endo()[m1.end():m2.start()]
     return adapter
 
-def gene_activation_prefix(offset, size):
+def gene_activation_prefix(gene):
     # see fieldrepairing
     pattern = [
         open_paren,
@@ -68,18 +76,31 @@ def gene_activation_prefix(offset, size):
         ]
     template = \
         [Reference(0, 0)]+\
-        map(Base, asnat(offset))+\
-        map(Base, asnat(size))+\
+        map(Base, asnat(gene.offset))+\
+        map(Base, asnat(gene.size))+\
         [Reference(1, 0)]
     
     items = pattern+[close_paren]+template+[close_paren]
     return ' '.join(i.to_dna() for i in items)
     
     
-# blue zone starts after it
-blue_zone_marker = 'IFPICFPPCFIPP'
+def put_to_blue_prefix(data):
+    pattern = [
+        open_paren,
+        Search(blue_zone_marker),
+        close_paren,
+        ]
+    template = \
+        [Reference(0, 0)]+\
+        map(Base, data)
+    items = pattern+[close_paren]+template+[close_paren]
+    return ' '.join(i.to_dna() for i in items)
+    
+    
+Gene = namedtuple('Gene', 'offset size')
 
-green_zone_marker = 'IFPICFPPCFFPP'
+apple = Gene(0x65F785, 0x0003FB)
+
     
 if __name__ == '__main__':
     
@@ -91,5 +112,10 @@ if __name__ == '__main__':
     prefix = open(os.path.join(project_dir, 'data/sun.dna')).read()
     show_pattern_and_template(prefix+endo())
 
-    print gene_activation_prefix(1234, 500)
-        
+    #print put_to_blue_prefix('ICICIIIIIIIIIIP')
+    print put_to_blue_prefix('F')
+    p = ''
+    p += put_to_blue_prefix(asnat(250, length=24)*3)
+    p += gene_activation_prefix(apple)
+    print p.replace(' ', '')
+            

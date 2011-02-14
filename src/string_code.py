@@ -1,4 +1,4 @@
-from dna_basics import consts, nat, protect, asnat_fixed_length
+from dna_basics import consts, nat, protect
 
 # codepage, both ways
 code = \
@@ -32,7 +32,7 @@ def extract_from_offset(dna, offset, level=1):
     return result
 
 def search(dna, substring, level=1):
-    substring_dna = ''.join(asnat_fixed_length(code[c]) for c in substring)
+    substring_dna = ''.join(asnat(code[c], length=9) for c in substring)
     substring_dna = protect(substring_dna, level) # inefficient
     return dna.find(substring_dna)
 

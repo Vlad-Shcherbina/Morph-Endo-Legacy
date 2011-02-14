@@ -1,5 +1,5 @@
 from dna_code import endo, green_zone_marker
-from dna_basics import asnat_fixed_length, nat
+from dna_basics import asnat, nat
 
 import sys
 
@@ -11,7 +11,7 @@ def modify(dna, offset, type, value):
     assert(green_begin > 0)
     start = green_begin + offset
     end = start + sizeof[type]
-    return dna[:start] + asnat_fixed_length(value, sizeof[type]) + dna[end:]
+    return dna[:start] + asnat(value, length=sizeof[type]) + dna[end:]
 
 def get_value(dna, offset, type):
     green_begin = dna.find(green_zone_marker)
@@ -26,7 +26,7 @@ def get_value(dna, offset, type):
     nat_list = list(nat(b for b in iter))
     assert(len(nat_list) == 1)
     result = nat_list[0]
-    #assert(asnat_fixed_length(result, sizeof[type]) == dna[start:end])
+    #assert(asnat(result, length=sizeof[type]) == dna[start:end])
     return result
 
 def print_syntax():

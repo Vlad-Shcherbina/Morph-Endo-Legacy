@@ -30,23 +30,16 @@ def protect(dna, level):
     m = dict(zip('ICFP', a[-4:]))
     return ''.join(map(m.get, dna))
  
-def asnat(n):
+def asnat(n, length=None):
     r = []
     while n > 0:
         r.append('IC'[n%2])
         n //= 2
+    if length is not None:
+        assert len(r) < length
+        r += (length-len(r)-1)*['I']
     r.append('P')
-    return ''.join(r)
-
-def asnat_fixed_length(n, length=9):
-    r = []
-    j = length
-    while (n > 0) or (j > 1):
-        r.append('IC'[n%2])
-        n //= 2
-        j -= 1
-    r.append('P')
-    assert(len(r) == length) # overflow protection
+    
     return ''.join(r)
 
 def consts(dna):
