@@ -5,8 +5,20 @@ This whole dir is eclipse pydev project.
 Layout:
 src/
     sources, apparently
+    and some packages
+    General idea is that every python script that is supposed to be run with
+    command line arguments should be in 'src' folder (so that it won't cause
+    problems with PYTHONPATH when run from command line). Scripts that are
+    run withoud command like arguments and thus can be conveniently run from
+    eclipse, are allowed in package folders as well (because eclipse adds src
+    to python path).
 data/
     endo.dna -- ignored (dl from http://save-endo.cs.uu.nl/endo.zip)
     <prefix>.dna
     <prefix>.rna -- ignored (produce by execute.py)
     <prefix>.png -- ignored (produce by build.py)
+scripts/
+    obviously
+
+
+Also, use helpers.project_dir to relate to file system.
