@@ -3,8 +3,7 @@ from collections import defaultdict
 import kmp
 from helpers import limit_string
 from dna_code import protect, asnat
-from items import Base, OpenParen, open_paren, CloseParen, close_paren, \
-    Skip, Search, Reference, Length, RNA_Item 
+from items import *
 
 from DNA_parser import DNA_parser, dna_type
   
