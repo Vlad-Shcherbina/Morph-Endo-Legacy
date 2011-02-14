@@ -4,6 +4,7 @@ import os
 import re
 
 from helpers import project_dir
+from executor.items import *
 
 __all__ = [
     'endo',
@@ -72,14 +73,33 @@ def show_pattern_and_template(dna):
     print ' '.join(s2)
     
     
+adapter_signature = 'IFPICFPPCCC'
 def adapter():
-    # see fieldrepairing
-    adapter_signature = 'IFPICFPPCCC'
     m1, m2 = re.finditer(adapter_signature, endo())
     adapter = endo()[m1.end():m2.start()]
     return adapter
 
-
+def gene_activation_prefix(offset, size):
+    # see fieldrepairing
+    pattern = [
+        open_paren,
+        Search(adapter_signature),
+        open_paren,
+        Search(adapter_signature),
+        #Skip(len(adapter())+len(adapter_signature)),
+        close_paren,
+        close_paren,
+        ]
+    template = \
+        [Reference(0, 0)]+\
+        map(Base, asnat(offset))+\
+        map(Base, asnat(size))+\
+        [Reference(1, 0)]
+    
+    items = pattern+[close_paren]+template+[close_paren]
+    return ' '.join(i.to_dna() for i in items)
+    
+    
 # blue zone starts after it
 blue_zone_marker = 'IFPICFPPCFIPP'
 
@@ -90,6 +110,9 @@ if __name__ == '__main__':
     #prefix = open('../data/precheck.dna').read()
     #show_pattern_and_template(prefix+endo())
 
-    prefix = adapter()+asnat(123)+asnat(456)
+    #prefix = adapter()+asnat(123)+asnat(456)
+    prefix = open(os.path.join(project_dir, 'data/sun.dna')).read()
     show_pattern_and_template(prefix+endo())
+    
+    print gene_activation_prefix(1234, 500)
         
