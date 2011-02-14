@@ -50,7 +50,7 @@ def stats_run(n_steps=0):
 def main():
     prefix_file, = sys.argv[1:]
     
-    prefix = open(prefix_file+'.dna').read()
+    prefix = open(prefix_file+'.dna').read().strip()
     
     rna = open(prefix_file+'.rna', 'w')
     

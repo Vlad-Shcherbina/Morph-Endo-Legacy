@@ -1,0 +1,49 @@
+
+
+from dna_code import endo
+
+from string_code import character
+
+def forgiving_unprotect(dna):
+    i = iter(dna)
+    result = ''
+    c = next(i, '')
+    while True:
+        if c == '':
+            break
+        if c == 'C':
+            result += 'I'
+        elif c == 'F':
+            result += 'C'
+        elif c == 'P':
+            result += 'F'
+        elif c == 'I':
+            c = next(i, '')
+            if c == 'P':
+                result += 'P'
+            else:
+                continue
+        c = next(i, '') 
+    return result
+
+def decode_chars(dna):
+    result = ''
+    for i in range(0, len(dna), 9):
+        bits = dna[i:i+9]
+        if 'F' in bits or 'P' in bits:
+            if not result.endswith('~'):
+                result += '~'
+            continue
+        bits = bits.replace('I', '0').replace('C', '1')
+        bits = bits[::-1]
+        x = int(bits, 2)
+        if x in character:
+            result += character[x]
+        else:
+            result += '?'
+    return result
+
+if __name__ == '__main__':
+    s = forgiving_unprotect(endo())
+    for i in range(9):
+        print decode_chars(s[i:])
