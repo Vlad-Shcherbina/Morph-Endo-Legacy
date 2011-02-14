@@ -52,6 +52,16 @@ void DNAParser::unread_codon(t_codon codon)
 	saved_codon = codon;
 }
 
+void DNAParser::jump(int offset)
+{
+	assert(offset >= 0);
+	assert(offset < dna_len);
+	saved_codon = "";
+	index = offset;
+	iter = Iterator(pdna);
+	iter.advance(offset);
+}
+
 int DNAParser::nat()
 {
 	int result = 0;

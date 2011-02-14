@@ -12,7 +12,7 @@ typedef std::string t_codon;
 class DNAParser {
 	dna_type pdna;
 	dna_iter iter;
-	int dna_len;		// TODO GET RID OF THIS
+	int dna_len;
 	int index;
 	t_codon saved_codon;
 
@@ -21,11 +21,11 @@ class DNAParser {
 	t_base read_base();
 	t_codon read_codon();
 	void unread_codon(t_codon codon);
-	inline int getIndex()
-	{
+	inline int DNAParser::getIndex() {
 		assert(saved_codon == "");	// otherwise index is wrong. probably.
 		return index;
 	}
+	void jump(int index);
 	int nat();
 	std::string consts();
 };

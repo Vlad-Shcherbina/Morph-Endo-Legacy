@@ -5,6 +5,8 @@
 
 const int DEFRAGMENTATION_FREQUENCY = 10000000;
 
+/* output formatters */
+
 std::string limit_string(std::string &s, int maxlen=10)
 {
 	std::stringstream ss;
@@ -30,6 +32,11 @@ std::string limit_string(dna_type pdna, int maxlen=10)
 	ss << " (" << pdna->length() << " bases)";
 	return ss.str();
 }
+
+/* end output formatters */
+
+
+/* DNA coding */
 
 std::string quote(std::string &s)
 {
@@ -82,6 +89,8 @@ dna_type asnat(int n)
 	result += 'P';
 	return new Leaf(result);
 }
+
+/* end DNA coding */
 
 Executor::Executor(dna_type pdna, bool debug) : parser(DNAParser(pdna)), pdna(pdna), debug(debug)
 {
