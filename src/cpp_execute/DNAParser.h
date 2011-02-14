@@ -33,6 +33,7 @@ class DNAParser {
 	int nat();
 	std::string consts();
 	int green_offset();
+	int get_green_int(int offset);	// warning: causes jump
 };
 
 #endif /* DNAPARSER_H */

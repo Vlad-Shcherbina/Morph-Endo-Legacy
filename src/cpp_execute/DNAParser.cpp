@@ -112,3 +112,9 @@ int DNAParser::green_offset()
 	}
 	return green_zone_offset;
 }
+
+int DNAParser::get_green_int(int offset)
+{
+	jump(green_offset() + offset);
+	return nat();
+}
