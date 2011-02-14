@@ -58,6 +58,6 @@ def search(dna, substring, level=1):
 def extract_from_prefix(dna, substring, level=1):
     offset = search(dna, substring, level)
     if offset > 0:
-        return extract_from_offset(dna, offset, level)
+        return (offset, extract_from_offset(dna, offset, level))
     else:
-        return ""
+        return (-1, "")

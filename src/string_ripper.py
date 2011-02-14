@@ -3,13 +3,20 @@ import dna_code
 import sys
 
 if __name__ == "__main__":
-#    offset = int(sys.argv[1])
-#    endo = dna_code.endo();
-#    print string_code.get_string(endo, offset)
-    prefix = sys.argv[1]
+    command = sys.argv[1]
+
     endo = dna_code.endo();
-    found = string_code.extract_from_prefix(endo, prefix)
-    if found != "":
-        print found
+
+    if command == 'offset':
+        offset = int(sys.argv[2])
+        print string_code.extract_from_offset(endo, offset)
+    elif command == 'prefix':
+        prefix = sys.argv[2]
+        (offset, substring) = string_code.extract_from_prefix(endo, prefix)
+        if offset > 0:
+            print "at", str(offset) + ":"
+            print substring
+        else:
+            print "Nothing found."
     else:
-        print "Nothing found."
+        print "Syntax: string_ripper.py ( offset | prefix ) ARGUMENT"
