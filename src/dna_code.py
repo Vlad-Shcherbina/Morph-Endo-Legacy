@@ -40,6 +40,33 @@ def asnat(n):
     r.append('P')
     return ''.join(r)
 
+def consts(dna):
+    for base in dna:
+        if base == 'I':
+            try:
+                nextbase = dna.next()
+            except StopIteration:
+                return
+            if nextbase == 'C':
+                yield 'P'
+            else:
+                return
+        else:
+            yield {'C':'I', 'F':'C', 'P':'F'}[base]
+
+def nat(dna):
+    result = 0
+    power = 1
+    for base in dna:
+        if base == 'P':
+            yield result
+            result = 0
+            power = 1
+        elif base == 'C':
+            result += power
+        power *= 2
+        
+
 def show_pattern_and_template(dna):
     from executor import Executor
 
