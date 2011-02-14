@@ -81,10 +81,10 @@ def gene_activation_prefix(gene):
         [Reference(1, 0)]
     
     items = pattern+[close_paren]+template+[close_paren]
-    return ' '.join(i.to_dna() for i in items)
+    return ''.join(i.to_dna() for i in items)
     
     
-def put_to_blue_prefix(data):
+def push_to_blue_prefix(data):
     pattern = [
         open_paren,
         Search(blue_zone_marker),
@@ -94,7 +94,7 @@ def put_to_blue_prefix(data):
         [Reference(0, 0)]+\
         map(Base, data)
     items = pattern+[close_paren]+template+[close_paren]
-    return ' '.join(i.to_dna() for i in items)
+    return ''.join(i.to_dna() for i in items)
     
 
 def create_and_run_prefix(prefix, path):
@@ -113,6 +113,28 @@ def guide_page_prefix(n):
     return s.replace(' ','')
 
     
+def test():
+    # examples from fieldrepairing
+    import genes
+    assert gene_activation_prefix(genes.Gene(1234, 500)) == \
+        'IIPIFFCPICCFPICICFFFIIPIFFCPICCFPICICFFFIICIICIICIPPPCFCCFCFFCCFI'+\
+        'CCCFCFFFFFICIPPCPIIC'
+    assert push_to_blue_prefix(asnat(42, length=24)) == \
+        'IIPIFFCPICCFPICICFPCICICIICIICIPPPCFCFCFCCCCCCCCCCCCCCCCCICIIC'
+    assert push_to_blue_prefix('F') == \
+        'IIPIFFCPICCFPICICFPCICICIICIICIPPPPIIC'
+        
+    
 if __name__ == '__main__':
+    test()
+    #create_and_run_prefix(guide_page_prefix(23), 'data/guide/activating_genes_encrypted')
+    
+    import genes
+    prefix = ''
+    #prefix += push_to_blue_prefix(genes.vmu_code_purchase_code.content())
+    #prefix += gene_activation_prefix(genes.help_beautiful_numbers)
+    #create_and_run_prefix(prefix, 'data/hbn')
+    prefix += gene_activation_prefix(genes.contest1998)
+    create_and_run_prefix(prefix, 'data/contest1998')
     pass
             
