@@ -62,6 +62,7 @@ def nat(dna):
             yield result
             result = 0
             power = 1
+            continue
         elif base == 'C':
             result += power
         power *= 2
