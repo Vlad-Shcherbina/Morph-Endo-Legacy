@@ -1,0 +1,32 @@
+Compressor
+
+ the next item from the 
+                 
+the red block. The orange block is only a backup for the red block. 
+
+The blue block contains an instruction table with 20 entries of 32 
+
+ for this item in the table, and it 
+searches
+
+data fragment, it 
+
+The compressor consists of three blocks. The red block does all the 
+hard work. It performs three tasks: it 
+
+Patent owned by FuunTech Inc.
+restores
+
+
+eval
+
+table
+backup
+The compressor is used extensively for fonts and bitmaps.
+
+The data lives in the green part, which is positioned right after the 
+compressor. The data is a sequence of integers of variable length. 
+The last integer of the sequence is a special one, as its sole purpose 
+is to terminate the compressor.
+
+
