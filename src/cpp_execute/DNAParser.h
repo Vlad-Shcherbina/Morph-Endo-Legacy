@@ -26,6 +26,8 @@ class DNAParser {
 		assert(saved_codon == "");	// otherwise index is wrong. probably.
 		return index;
 	}
+	int nat();
+	std::string consts();
 };
 
 #endif /* DNAPARSER_H */

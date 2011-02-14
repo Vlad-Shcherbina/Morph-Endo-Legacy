@@ -51,3 +51,42 @@ void DNAParser::unread_codon(t_codon codon)
 	assert(saved_codon == "");
 	saved_codon = codon;
 }
+
+int DNAParser::nat()
+{
+	int result = 0;
+	int power = 1;
+	while (true)
+	{
+		t_base a = read_base();
+		if ((a == 0) || (a == 'P'))
+			break;
+		if (a == 'C')
+			result += power;
+		power *= 2;
+	}
+	return result;
+}
+
+std::string DNAParser::consts()
+{
+	std::string result;
+	while (true)
+	{
+		t_codon a = read_codon();
+		if (a == "C")
+			result += "I";
+		else if (a == "F")
+			result += "C";
+		else if (a == "P")
+			result += "F";
+		else if (a == "IC")
+			result += "P";
+		else
+		{
+			unread_codon(a);
+			break;				
+		}
+	}
+	return result;
+}

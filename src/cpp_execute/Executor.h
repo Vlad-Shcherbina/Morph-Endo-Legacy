@@ -50,8 +50,6 @@ public:
 	bool debug;
 
 	t_pattern* pattern();
-	int nat();
-	std::string consts();
 	t_template* templ();
 	void matchreplace(t_pattern* p, t_template* t);
 	dna_type replacement(t_template* t, t_environment* e);

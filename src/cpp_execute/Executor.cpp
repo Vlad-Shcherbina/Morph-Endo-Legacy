@@ -163,11 +163,11 @@ t_pattern* Executor::pattern()
 		else if (l == 2)
 		{
 			if (c == 'P') // IP
-				result->push_back(new ISkip(nat()));
+				result->push_back(new ISkip(parser.nat()));
 			else // IF
 			{
 				parser.read_base();
-				result->push_back(new ISearch(consts()));
+				result->push_back(new ISearch(parser.consts()));
 			}
 		}
 		else if (l == 3)
@@ -200,45 +200,6 @@ t_pattern* Executor::pattern()
 	}
 }
 
-int Executor::nat()
-{
-	int result = 0;
-	int power = 1;
-	while (true)
-	{
-		t_base a = parser.read_base();
-		if ((a == 0) || (a == 'P'))
-			break;
-		if (a == 'C')
-			result += power;
-		power *= 2;
-	}
-	return result;
-}
-
-std::string Executor::consts()
-{
-	std::string result;
-	while (true)
-	{
-		t_codon a = parser.read_codon();
-		if (a == "C")
-			result += "I";
-		else if (a == "F")
-			result += "C";
-		else if (a == "P")
-			result += "F";
-		else if (a == "IC")
-			result += "P";
-		else
-		{
-			parser.unread_codon(a);
-			break;				
-		}
-	}
-	return result;
-}
-
 t_template* Executor::templ()
 {
 	t_template* result = new t_template;
@@ -253,14 +214,14 @@ t_template* Executor::templ()
 			result->push_back(new IBase(a));
 		else if (l == 2) // IF or IP
 		{
-			int level = nat();
-			int n = nat();
+			int level = parser.nat();
+			int n = parser.nat();
 			result->push_back(new IReference(n, level));
 		}
 		else if (l == 3)
 		{
 			if (c == 'P') // IIP
-				result->push_back(new ILength(nat()));
+				result->push_back(new ILength(parser.nat()));
 			else if (c == 'I') // III
 			{
 				t_command command;
