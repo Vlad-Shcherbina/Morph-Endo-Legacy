@@ -47,16 +47,19 @@ def decode_chars(dna):
 
 def strings(s):
     result = []
-    for m in re.finditer(r'[^\~^\?]{4,}', s):
+    for m in re.finditer(r'[^\~^\?]{6,}', s):
         result.append((m.start(), m.end(), m.group()))
     return result
 
 if __name__ == '__main__':
-    s = forgiving_unprotect(endo())
-    results = []
-    for i in range(9):
-        data = decode_chars(s[i:])
-        results += strings(data)
-    results.sort(key=lambda (start, end, text): start)
-    for start, end, text in results:
-        print text
+    s = endo()
+    for i in range(100):
+        print '************** PROTECTION LEVEL', i
+        results = []
+        for i in range(9):
+            data = decode_chars(s[i:])
+            results += strings(data)
+        results.sort(key=lambda (start, end, text): start)
+        for start, end, text in results:
+            print text
+        s = forgiving_unprotect(s)
