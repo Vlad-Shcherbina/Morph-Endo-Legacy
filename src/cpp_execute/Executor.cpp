@@ -416,25 +416,33 @@ dna_type  Executor::replacement(t_template* templ, t_environment* e)
 
 void Executor::dump_registers()
 {
-	DNAParser register_parser(pdna);
+	DNAParser p(pdna);
 
 	std::stringstream ss;
-	int offset = register_parser.green_offset();
+	
+	
+	int AAA_geneTablePageNr = p.get_green_int(0x510),
+		__array_index = p.get_green_int(0xc4589),
+		__array_value = p.get_green_int(0xc45a1),
+		__int12 = p.get_green_int(0xc4628),
+		__int12_2 = p.get_green_int(0xc4634),
+		__int24 = p.get_green_int(0xc45eb),
+		__int24_2 = p.get_green_int(0xc4603),
+		__int3 = p.get_green_int(0xc4625),
+		__int48 = p.get_green_int(0xc4640),
+		__int9 = p.get_green_int(0xc461c);
+	
 
-	register_parser.jump(offset + 0x510);
-	ss << "AAA_geneTablePageNr = " << register_parser.nat() << ", ";
-	register_parser.jump(offset + 0x4628);
-	ss << "__int12 = " << register_parser.nat() << ", ";
-	register_parser.jump(offset + 0x4634);
-	ss << "__int12_2 = " << register_parser.nat() << ", " << std::endl;
-	register_parser.jump(offset + 0x45eb);
-	ss << "__int24 = " << register_parser.nat() << ", ";
-	register_parser.jump(offset + 0x4603);
-	ss << "__int24_2 = " << register_parser.nat() << ", ";
-	register_parser.jump(offset + 0x4625);
-	ss << "__int3 = " << register_parser.nat() << ", ";
-	register_parser.jump(offset + 0x461c);
-	ss << "__int9 = " << register_parser.nat() << std::endl;
+	ss << "AAA_geneTablePageNr = " << AAA_geneTablePageNr << ", " << std::endl;
+	ss << "__array_index = " << __array_index << ", ";
+	ss << "__array_value = " << __array_value << ", " << std::endl;
+	ss << "__int12 = " << __int12 << ", ";
+	ss << "__int12_2 = " << __int12_2 << ", " << std::endl;
+	ss << "__int24 = " << __int24 << ", ";
+	ss << "__int24_2 = " << __int24_2 << ", " << std::endl;
+	ss << "__int3 = " << __int3 << ", ";
+	ss << "__int48 = " << __int48 << ", ";
+	ss << "__int9 = " << __int9 << std::endl;
 
 	std::cout << ss.str();
 }

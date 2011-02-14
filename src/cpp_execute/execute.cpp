@@ -105,9 +105,12 @@ void run(std::string prefix_file_name)
 	{
 		for (int i = 0; true; i++)
 		{
+			if (i < 100)
+				e.dump_registers();
 			if ((i > 0) && (i%10000 == 0))
 			{
 				std::cout <<  i << " " << int((i/(clock()-start+(1e-6)))*CLOCKS_PER_SEC) << " steps/s" << std::endl;
+				e.dump_registers();
 			}
 			e.step();
 		}
