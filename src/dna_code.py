@@ -79,6 +79,7 @@ def gene_activation_prefix(offset, size):
 # blue zone starts after it
 blue_zone_marker = 'IFPICFPPCFIPP'
 
+green_zone_marker = 'IFPICFPPCFFPP'
     
 if __name__ == '__main__':
     

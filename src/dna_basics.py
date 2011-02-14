@@ -38,6 +38,17 @@ def asnat(n):
     r.append('P')
     return ''.join(r)
 
+def asnat_fixed_length(n, length=9):
+    r = []
+    j = length
+    while (n > 0) or (j > 1):
+        r.append('IC'[n%2])
+        n //= 2
+        j -= 1
+    r.append('P')
+    assert(len(r) == length) # overflow protection
+    return ''.join(r)
+
 def consts(dna):
     for base in dna:
         if base == 'I':

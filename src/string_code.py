@@ -1,4 +1,4 @@
-from dna_basics import consts, nat, protect
+from dna_basics import consts, nat, protect, asnat_fixed_length
 
 # codepage, both ways
 code = \
@@ -14,25 +14,6 @@ code = \
 'v': 101, 'y': 104, 'x': 103, 'z': 105, ':': 58, '"': 63, '`': 57}
 
 character = dict(zip(code.values(), code.keys()))
-
-
-
-# this should append the I's before P instead
-# but fuck it
-#def asnat_fixed_length(n, length=9):
-#    s = dna_code.asnat(n)
-#    assert(len(s) <= length)
-#    return 'I'*(length - len(s)) + s
-
-def asnat_fixed_length(n, length=9):
-    r = []
-    while (n > 0) or (length > 1):
-        r.append('IC'[n%2])
-        n //= 2
-        length -= 1
-    r.append('P')
-    return ''.join(r)
-
 
 def extract_from_offset(dna, offset, level=1):
     result = ""
