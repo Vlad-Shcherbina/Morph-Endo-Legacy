@@ -1,5 +1,13 @@
 # unsorted shit
 
+import os
+
+
+project_dir = ''
+while not os.path.exists(os.path.join(project_dir, '.project')):
+    project_dir = os.path.join(project_dir, '..')
+
+
 def limit_string(s, maxlen=10):
     if len(s) <= maxlen:
         return ''.join(s)

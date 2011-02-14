@@ -1,7 +1,9 @@
 # stuff related to contents of DNA
 
+import os
 import re
 
+from helpers import project_dir
 
 __all__ = [
     'endo',
@@ -10,7 +12,7 @@ __all__ = [
     ]
 
 
-endo_file_name = '../data/endo.dna'
+endo_file_name = os.path.join(project_dir, 'data/endo.dna')
 _endo = None
 def endo():
     global _endo
@@ -39,7 +41,7 @@ def asnat(n):
     return ''.join(r)
 
 def show_pattern_and_template(dna):
-    from Executor import Executor
+    from executor import Executor
 
     e = Executor(dna)
     e.explicit_rna_items = True

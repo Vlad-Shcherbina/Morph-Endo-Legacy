@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-from Executor import Executor, FinishException
+from executor import Executor, FinishException
 from dna_code import endo
   
 
