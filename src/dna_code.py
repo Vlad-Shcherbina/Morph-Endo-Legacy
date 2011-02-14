@@ -122,8 +122,10 @@ class Gene(Gene):
 
 apple = Gene(0x65F785, 0x0003FB)
 mlephant = Gene(0x5B427d, 0x002811)
-do_self_check = Gene(0x000058, 1)
+do_self_check = Gene(0x000058, 1) # that self check from the beginning
 gene_table_page_nr = Gene(0x00510, 0x00018)
+font_table_dots = Gene(0x0A1AC3, 0x002400)
+font_table_cyperus = Gene(0x033965, 0x002400)
 
 
 def create_and_run_prefix(prefix, path):
@@ -132,6 +134,14 @@ def create_and_run_prefix(prefix, path):
         fout.write(prefix)
     
     os.system(project_path('scripts\\exec_build.bat')+' '+file_name)
+
+    
+def guide_page_prefix(n):
+    s = bin(n)[2:]
+    s = s[::-1]
+    s = s.replace('0', 'C').replace('1', 'F')
+    s = 'IIP IFFCPICFPPIC IIC {0} IIC IPPP {1} IIC'.format('C'*len(s),s)
+    return s.replace(' ','')
 
     
 if __name__ == '__main__':
@@ -145,11 +155,17 @@ if __name__ == '__main__':
     show_pattern_and_template(prefix+endo())
 
     #print put_to_blue_prefix('ICICIIIIIIIIIIP')
-    print put_to_blue_prefix('F')
-    p = ''
+    #print put_to_blue_prefix('F')
+    #p = ''
     #p += put_to_blue_prefix(asnat(250, length=24)*3)
-    p += gene_activation_prefix(apple)
-    print p.replace(' ', '')
+    #p += gene_activation_prefix(apple)
+    #print p.replace(' ', '')
     
-    print do_self_check.content()
+    #print do_self_check.content()
+    #create_and_run_prefix(do_self_check.patch_prefix('P')+'')
+    create_and_run_prefix(
+        font_table_dots.patch_prefix(font_table_cyperus.content())+
+        guide_page_prefix(10646),
+        'data/guide/true_charset'
+        )
             
