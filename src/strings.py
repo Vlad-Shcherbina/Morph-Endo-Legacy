@@ -1,8 +1,8 @@
-
+import re
 
 from dna_code import endo
-
 from string_code import character
+
 
 def forgiving_unprotect(dna):
     i = iter(dna)
@@ -26,6 +26,7 @@ def forgiving_unprotect(dna):
         c = next(i, '') 
     return result
 
+
 def decode_chars(dna):
     result = ''
     for i in range(0, len(dna), 9):
@@ -43,7 +44,19 @@ def decode_chars(dna):
             result += '?'
     return result
 
+
+def strings(s):
+    result = []
+    for m in re.finditer(r'[^\~^\?]{4,}', s):
+        result.append((m.start(), m.end(), m.group()))
+    return result
+
 if __name__ == '__main__':
     s = forgiving_unprotect(endo())
+    results = []
     for i in range(9):
-        print decode_chars(s[i:])
+        data = decode_chars(s[i:])
+        results += strings(data)
+    results.sort(key=lambda (start, end, text): start)
+    for start, end, text in results:
+        print text
