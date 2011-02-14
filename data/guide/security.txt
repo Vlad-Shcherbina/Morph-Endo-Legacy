@@ -1,31 +1,36 @@
-Fuuas coaiaia a grzt dzl of proprietary techaology. To bro t In 'l1ctualProperty
-rjhts of §uuaTech aad its s tockholders , certaia parts of a§]§1n‘?h(§NV\stV1{%e encrypted using
-one of two cryptographic techaologies. This eaables such parts to be accessed onl] 0 those
-customers who have obtaiaed the aecessary access codes.
-Meihod A was used ih the past, but it has receatly beea broken, Inteed, the encryption sc1h‘me
-washrevzled io be so flawed ihat it caa be brokea maaually, It is <e\?'l\':1 use for some parts of
-the Ustem, btt FuuaTech iscmigratiag away from it. We will not discts it further,
-Method B, a FuuaT h irade secret, is sigaificaatly more powerful. I0 repyuires the cusiomer
-to eacode a specj1le?eq§eace of charatttrs, called a "key", into his §oun`s DNAc at a sr-`V'])\'F\'])
-§o?atioh. If the key is preseat, the c espoadtag fuactioaality BV'])oMV's available, Otherwise,
-Y1 behaviour may raage fpom aa error message t violeat dzth.
-If you have los t a key, ryvcovery of the key is aoi geaerally possibtrye due to the complexity of the
-cryptographfc techaolog _ {I° is a good idz @ wriie dowa keys mewhere, maybe even on a yellos
-pjce of paper attached to yotor computiag dyevice.) However, if your key is sufficiently short, ou
-may be able io retroaer ii usiag the Fuua`s ke cracker. To be able to use the cracker, you mts t
-s till hze your p rchas? code {a 24-a idosequeace). Ptzse aciivaie the Veracker gene, passing it
-the purchase code, aad afier some perjtld f time it ma priai out sour ke . Be prepared to wait a
-lohg time. Ih the Slow Zoae, crackiag a 2-character key mastake miautes, while a 3-character
-key may take hoors.
-1. Make a lqt of aumbers, 0 to 2.55,
-2* Set the couhter foo to zero,
-3* Let bar couht from 0 ‘Vo 2.55 and zch time, adsd the baqth elemeat of the 'is t aad the blnr
-`th character of the key `Drapping aroun to the tart of the key if aecessary? to foo, aad s wap
-the foo`th aad 0z"th y')GMV`?1t`s of the li?t.
-4* Reset foo aad bar to zero,
-5* For all the data you want to encrypt or decrypt:
-Axxsacrzse foo, add to bar the foo`th elemeat of the list, theh swap the fossth aad 0/j`th
-elemeht .
-(I  ttore   , split the result iato four groups, and XOR tYyV`M with the acids
-All arithmetfc should be doae with 8 s\1;1if\1>a;1t acids.
+Fuuns contain a great deal of proprietary technology. To protect the Intellectual Property 
+rights of FuunTech and its stockholders, certain parts of a Fuun's DNA are encrypted using 
+one of two cryptographic technologies. This enables such parts to be accessed only by those 
+customers who have obtained the necessary access codes.
 
+Method A was used in the past, but it has recently been broken. Indeed, the encryption scheme 
+was revealed to be so flawed that it can be broken manually. It is still in use for some parts of 
+the system, but FuunTech is migrating away from it. We will not discuss it further.
+
+Method B, a FuunTech trade secret, is significantly more powerful. It requires the customer 
+to encode a special sequence of characters, called a "key", into his Fuun's DNA at a specific 
+location. If the key is present, the corresponding functionality becomes available. Otherwise, 
+Fuun behaviour may range from an error message to violent death.
+
+If you have lost a key, recovery of the key is not generally possible due to the complexity of the 
+cryptographic technology. (It is a good idea to write down keys somewhere, maybe even on a yellow 
+piece of paper attached to your computing device.) However, if your key is sufficiently short, you 
+may be able to recover it using the Fuun's key cracker. To be able to use the cracker, you must 
+still have your purchase code (a 24-acid sequence). Please activate the cracker gene, passing it 
+the purchase code, and after some period of time it may print out your key. Be prepared to wait a 
+long time. In the Slow Zone, cracking a 2-character key may take minutes, while a 3-character 
+key may take hours.
+
+*** Detailed description of Method B (subject to NDA) ***
+
+1. Make a list of numbers, 0 to 255.
+2. Set the counter foo to zero 
+3. Let bar count from 0 to 255 and each time, add the bar'th element of the list and the bar
+'th character of the key (wrapping around to the start of the key if necessary) to foo, and swap 
+the foo'th and bar'th elements of the list.
+4. Reset foo and bar to zero.
+5. For all the data you want to encrypt or decrypt:
+A. Increase foo, add to bar the foo'th element of the list, then swap the foo'th and bar'th elements.
+B. Add those two elements, split the result into four groups, and XOR them with the acids 
+(I = 0, C = 1, F = 2, P = 3).
+All arithmetic should be done with 8 significant acids.
