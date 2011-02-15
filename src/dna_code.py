@@ -49,8 +49,6 @@ def show_pattern_and_template(dna):
     print ' '.join(s1)
     print ' '.join(s2)
     
-    
-    
 # blue zone starts after it
 blue_zone_marker = 'IFPICFPPCFIPP'
 
@@ -117,6 +115,27 @@ def green_set_bool_prefix(offset, value=True):
     new_gene = 'P' if value else 'F'
     return overwrite_green_prefix(offset, new_gene)     
 
+def nop(length):
+    if length == 0: return ""
+    if length % 2 == 0:
+        m = (length - 6) / 2
+    else:
+        m = (length - 6 - 3) / 2
+    assert (m >= 0)
+    pattern = [ Base('C') ] * m
+    if length % 2 != 0:
+        pattern += [ Skip(0) ]
+    template = [Base('C')] * m
+    items = pattern+[close_paren]+template+[close_paren]
+    return ''.join(i.to_dna() for i in items)
+
+def replace_procedure_prefix(target, source):
+    """ Overwrite the body of procedure target with source
+        padding with nop. """
+    assert(source.size <= target.size)
+    #replacement = source.content() + nop(target.size - source.size)
+    replacement = nop(target.size - source.size) + source.content()
+    return target.patch_prefix(replacement)
 
 def create_and_run_prefix(prefix, path):
     file_name = project_path(path)
