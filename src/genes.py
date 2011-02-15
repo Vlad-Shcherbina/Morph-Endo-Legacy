@@ -36,6 +36,9 @@ font_table_cyperus = Gene(0x033965, 0x002400)
 font_table_bird_ring = Gene(0x0aa059, 0x002400)
 vmu_code_purchase_code = Gene(0x03391B, 24)
 
+help_fuun_security = Gene(0x6db2e0, 0x0126c8)
+help_initial_cond = Gene(0x4abbf1, 0x0097f2)
+
 crack_chars = Gene(0x0c0f1d, 0x0006c0)
 crack_key = Gene(0x5c6673, 0x002a14)
 crack_key_and_print = Gene(0x6C9469, 0x001616)
