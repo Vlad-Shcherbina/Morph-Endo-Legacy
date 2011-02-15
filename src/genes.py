@@ -44,3 +44,5 @@ crack_test_value = Gene(0x0c0f05, 0x000018)
 contest1998 = Gene(0x1A5B73, 0x007D96)
 
 help_beautiful_numbers = Gene(0x0e5d10, 0x007e2d)
+
+help_error_correcting_codes_purchase_code = Gene(0x033903, 0x000018)

@@ -153,12 +153,14 @@ if __name__ == '__main__':
     
     purchase_code = genes.vmu_code_purchase_code.content()
     print purchase_code
-    exit()
+    #exit()
     prefix = ''
     #prefix += genes.crack_test_value.patch_prefix(purchase_code)
     prefix += push_to_blue_prefix(purchase_code)
     prefix += gene_activation_prefix(genes.crack_key_and_print)
-    create_and_run_prefix(prefix, 'data/crack')
+    #create_and_run_prefix(prefix, 'data/crack')
     
-    pass
-            
+    #print genes.help_error_correcting_codes_purchase_code.content()
+    #prefix = genes.help_error_correcting_codes_purchase_code.patch_prefix(purchase_code)
+    #prefix += guide_page_prefix(84)
+    #create_and_run_prefix(prefix, 'data/ecc')
