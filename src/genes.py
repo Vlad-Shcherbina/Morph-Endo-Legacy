@@ -33,6 +33,7 @@ do_self_check = Gene(0x000058, 1) # that self check from the beginning
 gene_table_page_nr = Gene(0x00510, 0x00018)
 font_table_dots = Gene(0x0A1AC3, 0x002400)
 font_table_cyperus = Gene(0x033965, 0x002400)
+font_table_bird_ring = Gene(0x0aa059, 0x002400)
 vmu_code_purchase_code = Gene(0x03391B, 24)
 
 crack_chars = Gene(0x0c0f1d, 0x0006c0)
