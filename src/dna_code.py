@@ -97,6 +97,27 @@ def push_to_blue_prefix(data):
     return ''.join(i.to_dna() for i in items)
     
 
+def overwrite_green_prefix(offset, new_data):
+    """ Prefix to overwrite data in the green zone. """
+    length = len(new_data) # the green zone is unchanging in size
+    pattern = [
+        open_paren,
+        Search(green_zone_marker),
+        Skip(offset - len(green_zone_marker)),
+        close_paren,
+        Skip(length)
+        ]
+    template = \
+        [Reference(0, 0)]+\
+        map(Base, new_data)
+    items = pattern+[close_paren]+template+[close_paren]
+    return ''.join(i.to_dna() for i in items)
+
+def green_set_bool_prefix(offset, value=True):
+    new_gene = 'P' if value else 'F'
+    return overwrite_green_prefix(offset, new_gene)     
+
+
 def create_and_run_prefix(prefix, path):
     file_name = project_path(path)
     with open(file_name+'.dna', 'w') as fout:
