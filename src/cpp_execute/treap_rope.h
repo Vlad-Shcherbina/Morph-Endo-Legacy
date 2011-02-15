@@ -77,6 +77,7 @@ void test();
 
 struct Leaf : Node {
 	char* s; // no null at the end
+	int *sRefCount; // ref count for s
 	int begin, end;
 
 	Leaf(std::string str) {
@@ -87,11 +88,17 @@ struct Leaf : Node {
 			s = new char[str.length()];
 			memcpy(s, &str[0], str.length());
 		}
+		sRefCount = new int(1);
 		begin = 0;
 		end = str.length();
 	}
 
-	Leaf(char *s, int begin, int end) : s(s), begin(begin), end(end) {
+	Leaf(Leaf *leaf, int begin, int end) : 
+		s(leaf->s), 
+		sRefCount(leaf->sRefCount),
+		begin(leaf->begin+begin), 
+		end(leaf->begin+end) {
+		++*sRefCount;
 		this->heap_key = MAX_HEAP_KEY;
 	}
 
@@ -104,7 +111,7 @@ struct Leaf : Node {
 		assert(end <= length());
 		if (begin == 0 && end == length())
 			return this;
-		return new Leaf(s, this->begin+begin, this->begin+end);
+		return new Leaf(this, begin, end);
 	}
 	virtual void debug_print(int indent = 0) {
 		for (int i = 0; i<indent; i++)
@@ -120,6 +127,13 @@ struct Leaf : Node {
 	}
 	virtual void accumulate_string(std::string &s) {
 		s.append(this->s+begin, this->s+end);
+	}
+	virtual ~Leaf() {
+		assert(*sRefCount > 0);
+		if (--*sRefCount == 0) {
+			delete sRefCount;
+			delete[] s;
+		}
 	}
 };
 
