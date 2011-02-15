@@ -4,7 +4,7 @@
 #include "Executor.h"
 #include "kmp.h"
 
-const int DEFRAGMENTATION_FREQUENCY = 10000000;
+const int DEFRAGMENTATION_FREQUENCY = 2000000;
 
 /* output formatters */
 

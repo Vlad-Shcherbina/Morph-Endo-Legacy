@@ -30,7 +30,7 @@ dna_type read_dna(std::string fname)
 	return new Leaf(result_string);
 }
 
-/*
+
 dna_type endo()
 {
 	return read_dna(endo_file_name);
@@ -73,7 +73,7 @@ void stats_run(int n_steps=2000000000)
 		std::cout << "execution finished" << std::endl;
 	}
 }
-*/
+
 void run(std::string prefix_file_name)
 {
 	dna_type endo, prefix;
@@ -105,12 +105,13 @@ void run(std::string prefix_file_name)
 	{
 		for (int i = 0; true; i++)
 		{
-			if (i < 100)
-				e.dump_registers();
+			//if (i < 100)
+			//	e.dump_registers();
 			if ((i > 0) && (i%10000 == 0))
 			{
+				std::cout << "cost: " << e.cost <<std::endl;
 				std::cout <<  i << " " << int((i/(clock()-start+(1e-6)))*CLOCKS_PER_SEC) << " steps/s" << std::endl;
-				e.dump_registers();
+				//e.dump_registers();
 			}
 			e.step();
 		}
@@ -135,6 +136,10 @@ void run(std::string prefix_file_name)
 
 int main(int argc, char** argv)
 {
+	//trace(10);
+	//stats_run(1000000);
+	//return 0;
+
 	if (argc != 2)
 	{
 		std::cout << "Syntax: execute PREFIX_NAME" << std::endl;
@@ -143,7 +148,4 @@ int main(int argc, char** argv)
 
 	run(argv[1]);
 	return 0;
-
-	//trace(100);
-	//stats_run(1000000);
 }

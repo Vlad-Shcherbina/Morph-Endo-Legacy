@@ -108,7 +108,7 @@ int DNAParser::green_offset()
 	if (green_zone_offset < 0)
 	{
 		green_zone_offset = kmp_search(pdna, const_cast<std::string&>(green_zone_marker), 0);
-		assert(green_zone_begin >= 0);
+		assert(green_zone_offset >= 0);
 	}
 	return green_zone_offset;
 }
