@@ -49,8 +49,6 @@ def show_pattern_and_template(dna):
     print ' '.join(s1)
     print ' '.join(s2)
     
-    
-    
 # blue zone starts after it
 blue_zone_marker = 'IFPICFPPCFIPP'
 
@@ -135,7 +133,8 @@ def replace_procedure_prefix(target, source):
     """ Overwrite the body of procedure target with source
         padding with nop. """
     assert(source.size <= target.size)
-    replacement = source.content() + nop(target.size - source.size)
+    #replacement = source.content() + nop(target.size - source.size)
+    replacement = nop(target.size - source.size) + source.content()
     return target.patch_prefix(replacement)
 
 def create_and_run_prefix(prefix, path):
