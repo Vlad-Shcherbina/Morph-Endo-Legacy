@@ -127,14 +127,17 @@ def test():
     
 if __name__ == '__main__':
     test()
-    #create_and_run_prefix(guide_page_prefix(23), 'data/guide/activating_genes_encrypted')
     
     import genes
+    
+    purchase_code = genes.vmu_code_purchase_code.content()
+    print purchase_code
+    exit()
     prefix = ''
-    #prefix += push_to_blue_prefix(genes.vmu_code_purchase_code.content())
-    #prefix += gene_activation_prefix(genes.help_beautiful_numbers)
-    #create_and_run_prefix(prefix, 'data/hbn')
-    prefix += gene_activation_prefix(genes.contest1998)
-    create_and_run_prefix(prefix, 'data/contest1998')
+    #prefix += genes.crack_test_value.patch_prefix(purchase_code)
+    prefix += push_to_blue_prefix(purchase_code)
+    prefix += gene_activation_prefix(genes.crack_key_and_print)
+    create_and_run_prefix(prefix, 'data/crack')
+    
     pass
             
