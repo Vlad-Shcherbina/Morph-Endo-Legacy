@@ -177,6 +177,16 @@ if __name__ == '__main__':
     #prefix += genes.crack_test_value.patch_prefix(purchase_code)
     prefix += push_to_blue_prefix(purchase_code)
     prefix += gene_activation_prefix(genes.crack_key_and_print)
+    
+    s = protect(green_zone_marker, 1)
+    for g in [
+        genes.help_lsystems,
+        genes.help_catalog_page,
+        genes.help_adaptive_genes,
+        genes.help_background,
+        genes.help_error_correcting_codes]:
+        print g.content()[:60]
+    
     #create_and_run_prefix(prefix, 'data/crack')
     
     #print genes.help_error_correcting_codes_purchase_code.content()
