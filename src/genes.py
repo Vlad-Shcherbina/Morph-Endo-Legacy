@@ -75,6 +75,8 @@ fuundoc1 = Gene(0x3d67ae, 0x129b8)
 fuundoc2 = Gene(0x2279f2, 0x12063)
 fuundoc3 = Gene(0x40ee09, 0xbccc)
 
+most_wanted = Gene(0x5d1833, 0x3e659)
+
 
 crack_chars = Gene(0x0c0f1d, 0x0006c0)
 crack_key = Gene(0x5c6673, 0x002a14)
