@@ -15,7 +15,7 @@ import dna_code as dna
 encrypted_help = ['help_activating_genes', 'help_error_correcting_codes', \
                   'help_beautiful_numbers']
 
-unknown_contests = ['contest_' + str(n) for n in xrange(1998, 2007 + 1)]
+#unknown_contests = ['contest_' + str(n) for n in xrange(1998, 2007 + 1)]
 
 # fuun_security as host
 #host_gene = genes.help_fuun_security
@@ -37,6 +37,20 @@ def process_genes(names_list, prefix=""):
                             host_activation_prefix,
                             "data\\ripped_pages\\" + gene_name)
 
+def genelist_integrity():
+    gene = genes.printgenetable
+    push_true = dna.push_to_blue_prefix('P')
+    integrity_prefix = dna.replace_procedure_prefix(host_gene, gene, push_true) 
+    
+    for page in range(15):
+        listpage_prefix = genes.gene_table_page_nr.patch_prefix(
+                                                        dna.asnat(page, length=24))
+        #genelist_prefix += guide_page_prefix(42)
+        
+        dna.create_and_run_prefix(listpage_prefix + integrity_prefix + \
+                                  host_activation_prefix,
+                        'data/guide/genelist_integrity/{0:02}'.format(page))
+
 if __name__ == "__main__":
 #    prefix = dna.replace_procedure_prefix(genes.help_background, \
 #                                          genes.impdoc_background)
@@ -44,5 +58,16 @@ if __name__ == "__main__":
     
 #    process_genes(unknown_help)
 #    process_genes(unknown_fuundocs)
-    process_genes(unknown_contests)
+#    process_genes(unknown_contests)
+
+    genelist_integrity()
+    
+#    for gene_name in ['printgenetable']:
+#        gene = genes.__dict__[gene_name]
+#        push_true = dna.push_to_blue_prefix('P')
+#        dna.create_and_run_prefix(
+#                                dna.replace_procedure_prefix(host_gene, gene, push_true) + \
+#                                host_activation_prefix,
+#                                "data\\ripped_pages\\" + gene_name)
+
     

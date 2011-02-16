@@ -88,7 +88,7 @@ contest_2006 = Gene(0x435804, 0x95f5)
 contest_2007 = Gene(0x2084f9, 0xb052)
 
 most_wanted = Gene(0x5d1833, 0x3e659)
-
+printgenetable = Gene(0x284bc3, 0x272c1)
 
 crack_chars = Gene(0x0c0f1d, 0x0006c0)
 crack_key = Gene(0x5c6673, 0x002a14)

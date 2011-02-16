@@ -129,12 +129,13 @@ def nop(length):
     items = pattern+[close_paren]+template+[close_paren]
     return ''.join(i.to_dna() for i in items)
 
-def replace_procedure_prefix(target, source):
+def replace_procedure_prefix(target, source, prefix=''):
     """ Overwrite the body of procedure target with source
-        padding with nop. """
-    assert(source.size <= target.size)
-    #replacement = source.content() + nop(target.size - source.size)
-    replacement = nop(target.size - source.size) + source.content()
+        padding with nop + prefix. """
+    assert(source.size + len(prefix) <= target.size)
+    #replacement = nop(target.size - source.size) + source.content()
+    replacement = nop(target.size - source.size - len(prefix)) + prefix \
+                                + source.content()
     return target.patch_prefix(replacement)
 
 def create_and_run_prefix(prefix, path):
