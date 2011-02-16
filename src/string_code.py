@@ -15,6 +15,28 @@ code = \
 
 character = dict(zip(code.values(), code.keys()))
 
+# charset fragments
+triplet = [0x10, 0x20, 0x21]
+singleton = [0x7B]
+alphabet1 = range(0x41, 0x4A) + range(0x51, 0x5A) + range(0x62, 0x6A)
+alphabet2 = [x + 0x40 for x in alphabet1]
+digits = range(0xB0, 0xBA)
+rest = range(0x0A, 0x10) + [0x1A] + range(0x1C, 0x20) + range(0x2B, 0x30) + range(0x39, 0x40)
+
+charset = triplet + singleton + alphabet1 + alphabet2 + digits + rest
+
+def print_codepage():
+    for j in xrange(12):
+        for i in xrange(16):
+            code = j * 16 + i
+            if code in character:
+                print character[code],
+            elif code in charset:
+                print chr(178),
+            else:
+                print ' ',
+        print
+
 def extract_from_offset(dna, offset, level=1):
     result = ""
     gen = (dna[i] for i in xrange(offset, len(dna)))
