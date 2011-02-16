@@ -75,6 +75,18 @@ fuundoc1 = Gene(0x3d67ae, 0x129b8)
 fuundoc2 = Gene(0x2279f2, 0x12063)
 fuundoc3 = Gene(0x40ee09, 0xbccc)
 
+#contests
+contest_1998 = Gene(0x1A5B73, 0x007D96)
+contest_1999 = Gene(0x34da12, 0xd1d3)
+contest_2000 = Gene(0x5655d7, 0x9e94)
+contest_2001 = Gene(0x54ecfa, 0x93b2)
+contest_2002 = Gene(0x24748b, 0x9bc7)
+contest_2003 = Gene(0x23eb4e, 0x8925)
+contest_2004 = Gene(0x2ad4aa, 0x935b)
+contest_2005 = Gene(0xcc21e, 0xae91)
+contest_2006 = Gene(0x435804, 0x95f5)
+contest_2007 = Gene(0x2084f9, 0xb052)
+
 most_wanted = Gene(0x5d1833, 0x3e659)
 
 
@@ -83,6 +95,5 @@ crack_key = Gene(0x5c6673, 0x002a14)
 crack_key_and_print = Gene(0x6C9469, 0x001616)
 crack_test_value = Gene(0x0c0f05, 0x000018)
 
-contest1998 = Gene(0x1A5B73, 0x007D96)
 
 help_beautiful_numbers = Gene(0x0e5d10, 0x007e2d)
