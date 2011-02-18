@@ -31,7 +31,6 @@ class Gene(Gene):
         f.write(self.content())
         f.close() 
 
-
 apple = Gene(0x65F785, 0x0003FB)
 mlephant = Gene(0x5B427d, 0x002811)
 do_self_check = Gene(0x000058, 1) # that self check from the beginning
@@ -40,6 +39,10 @@ font_table_dots = Gene(0x0A1AC3, 0x002400)
 font_table_cyperus = Gene(0x033965, 0x002400)
 font_table_bird_ring = Gene(0x0aa059, 0x002400)
 vmu_code_purchase_code = Gene(0x03391B, 24)
+
+# control
+init = Gene(0x23ca0e, 0xa0e)
+terminate = Gene(0x224e0f, 0x18a)
 
 # help pages
 help_activating_genes = Gene(0x2bc2cb, 0xc0eb)
@@ -61,6 +64,10 @@ help_patching_dna = Gene(0x579f2d, 0xe2e7)
 help_undocumented_rna = Gene(0x2b681d, 0x56d7)
 help_virus = Gene(0x613180, 0x78e9)
 help_vmu = Gene(0x594930, 0x6b41)
+
+# help _purchase_code pages
+help_beautiful_numbers_purchase_code = Gene(0x33933, 0x18)
+help_error_correcting_codes_purchase_code = Gene(0x33903, 0x18)
 
 #impdoc pages
 impdoc_background = Gene(0x6d690c, 0x9e9)
@@ -99,6 +106,8 @@ printgenetable = Gene(0x284bc3, 0x272c1)
 hitWithTheClueStick = Gene(0x528, 0x32f3c)
 vmuRegCode = Gene(0x33483, 0x480)   #
 giveMeAPresent = Gene(0x5d, 0x480)  # equal size wtf?
+
+goodVibrations = Gene(0x501, 0x9)
 
 crack_chars = Gene(0x0c0f1d, 0x0006c0)
 crack_key = Gene(0x5c6673, 0x002a14)
